@@ -1,0 +1,304 @@
+Determining if files unistd.h exist failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_eb632.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:10.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_eb632.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_eb632.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_eb632.dir\Debug\cmTC_eb632.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_eb632.dir\Debug\cmTC_eb632.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_eb632.dir\Debug\\" /Fd"cmTC_eb632.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_UNISTD_H.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_eb632.dir\Debug\\" /Fd"cmTC_eb632.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_UNISTD_H.c"
+  HAVE_UNISTD_H.c
+  
+c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_unistd_h.c(2): fatal error C1083: Cannot open include file: 'unistd.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_eb632.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_eb632.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_eb632.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_unistd_h.c(2): fatal error C1083: Cannot open include file: 'unistd.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_eb632.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.46
+
+Source:
+/* */
+#include <unistd.h>
+
+
+int main(void){return 0;}
+
+Determining if files sys/time.h exist failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_34a4b.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:11.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_34a4b.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_34a4b.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_34a4b.dir\Debug\cmTC_34a4b.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_34a4b.dir\Debug\cmTC_34a4b.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_34a4b.dir\Debug\\" /Fd"cmTC_34a4b.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_SYS_TIME_H.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_34a4b.dir\Debug\\" /Fd"cmTC_34a4b.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_SYS_TIME_H.c"
+  HAVE_SYS_TIME_H.c
+  
+c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_sys_time_h.c(2): fatal error C1083: Cannot open include file: 'sys/time.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_34a4b.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_34a4b.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_34a4b.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_sys_time_h.c(2): fatal error C1083: Cannot open include file: 'sys/time.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_34a4b.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.42
+
+Source:
+/* */
+#include <sys/time.h>
+
+
+int main(void){return 0;}
+
+Determining if files sys/param.h exist failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_26e80.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:13.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_26e80.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_26e80.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_26e80.dir\Debug\cmTC_26e80.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_26e80.dir\Debug\cmTC_26e80.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_26e80.dir\Debug\\" /Fd"cmTC_26e80.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_SYS_PARAM_H.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_26e80.dir\Debug\\" /Fd"cmTC_26e80.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_SYS_PARAM_H.c"
+  HAVE_SYS_PARAM_H.c
+  
+c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_sys_param_h.c(2): fatal error C1083: Cannot open include file: 'sys/param.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_26e80.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_26e80.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_26e80.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_sys_param_h.c(2): fatal error C1083: Cannot open include file: 'sys/param.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_26e80.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.85
+
+Source:
+/* */
+#include <sys/param.h>
+
+
+int main(void){return 0;}
+
+Determining if files sys/ioctl.h exist failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_50481.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:14.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_50481.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_50481.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_50481.dir\Debug\cmTC_50481.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_50481.dir\Debug\cmTC_50481.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_50481.dir\Debug\\" /Fd"cmTC_50481.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_SYS_IOCTL_H.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_50481.dir\Debug\\" /Fd"cmTC_50481.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_SYS_IOCTL_H.c"
+  HAVE_SYS_IOCTL_H.c
+  
+c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_sys_ioctl_h.c(2): fatal error C1083: Cannot open include file: 'sys/ioctl.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_50481.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_50481.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_50481.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_sys_ioctl_h.c(2): fatal error C1083: Cannot open include file: 'sys/ioctl.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_50481.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.40
+
+Source:
+/* */
+#include <sys/ioctl.h>
+
+
+int main(void){return 0;}
+
+Determining if files usbhid.h exist failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_c9bb2.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:16.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_c9bb2.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_c9bb2.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_c9bb2.dir\Debug\cmTC_c9bb2.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_c9bb2.dir\Debug\cmTC_c9bb2.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_c9bb2.dir\Debug\\" /Fd"cmTC_c9bb2.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_USBHID_H.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_c9bb2.dir\Debug\\" /Fd"cmTC_c9bb2.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CheckIncludeFiles\HAVE_USBHID_H.c"
+  HAVE_USBHID_H.c
+  
+c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_usbhid_h.c(2): fatal error C1083: Cannot open include file: 'usbhid.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_c9bb2.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_c9bb2.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_c9bb2.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  c:\data\dropbox (biu)\teaching\computer graphics\hw assignments\hw1\freeglut\cmakefiles\checkincludefiles\have_usbhid_h.c(2): fatal error C1083: Cannot open include file: 'usbhid.h': No such file or directory [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_c9bb2.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.41
+
+Source:
+/* */
+#include <usbhid.h>
+
+
+int main(void){return 0;}
+
+Determining if the function gettimeofday exists failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_f0fab.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:16.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_f0fab.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_f0fab.dir\Debug\cmTC_f0fab.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_f0fab.dir\Debug\cmTC_f0fab.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=gettimeofday /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_f0fab.dir\Debug\\" /Fd"cmTC_f0fab.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.12\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=gettimeofday /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_f0fab.dir\Debug\\" /Fd"cmTC_f0fab.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.12\Modules\CheckFunctionExists.c"
+  CheckFunctionExists.c
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\cmTC_f0fab.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp/Debug/cmTC_f0fab.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp/Debug/cmTC_f0fab.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_f0fab.dir\Debug\CheckFunctionExists.obj
+CheckFunctionExists.obj : error LNK2019: unresolved external symbol _gettimeofday referenced in function _main [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj]
+C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\cmTC_f0fab.exe : fatal error LNK1120: 1 unresolved externals [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj" (default target) (1) ->
+(Link target) -> 
+  CheckFunctionExists.obj : error LNK2019: unresolved external symbol _gettimeofday referenced in function _main [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj]
+  C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\cmTC_f0fab.exe : fatal error LNK1120: 1 unresolved externals [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_f0fab.vcxproj]
+
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.64
+
+
+Determining if the function XParseGeometry exists failed with the following output:
+Change Dir: C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_45a4c.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.8.168+ga8fba1ebd7 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 07-Nov-19 14:25:17.
+Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_45a4c.dir\Debug\".
+  Creating directory "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_45a4c.dir\Debug\cmTC_45a4c.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_45a4c.dir\Debug\cmTC_45a4c.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=XParseGeometry /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_45a4c.dir\Debug\\" /Fd"cmTC_45a4c.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.12\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.15.26729 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=XParseGeometry /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_45a4c.dir\Debug\\" /Fd"cmTC_45a4c.dir\Debug\vc141.pdb" /Gd /TC /analyze- /FC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.12\Modules\CheckFunctionExists.c"
+  CheckFunctionExists.c
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\HostX86\x86\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\cmTC_45a4c.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp/Debug/cmTC_45a4c.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Data/Dropbox (BIU)/Teaching/Computer Graphics/HW Assignments/HW1/freeglut/CMakeFiles/CMakeTmp/Debug/cmTC_45a4c.lib" /MACHINE:X86 /SAFESEH  /machine:X86 cmTC_45a4c.dir\Debug\CheckFunctionExists.obj
+CheckFunctionExists.obj : error LNK2019: unresolved external symbol _XParseGeometry referenced in function _main [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj]
+C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\cmTC_45a4c.exe : fatal error LNK1120: 1 unresolved externals [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj]
+Done Building Project "C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj" (default target) (1) ->
+(Link target) -> 
+  CheckFunctionExists.obj : error LNK2019: unresolved external symbol _XParseGeometry referenced in function _main [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj]
+  C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\Debug\cmTC_45a4c.exe : fatal error LNK1120: 1 unresolved externals [C:\Data\Dropbox (BIU)\Teaching\Computer Graphics\HW Assignments\HW1\freeglut\CMakeFiles\CMakeTmp\cmTC_45a4c.vcxproj]
+
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:00.79
+
+

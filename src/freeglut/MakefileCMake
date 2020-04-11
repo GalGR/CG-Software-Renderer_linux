@@ -1,0 +1,10 @@
+FREEGLUTLIB = libfreeglut.so
+
+all: Makefile
+	$(MAKE) all
+
+Makefile:
+	cmake -D CMAKE_BUILD_TYPE=Release -D FREEGLUT_BUILD_DEMOS=OFF -D FREEGLUT_BUILD_SHARED_LIBS=ON -D FREEGLUT_REPLACE_GLUT=OFF .
+
+clean: Makefile
+	$(MAKE) clean
