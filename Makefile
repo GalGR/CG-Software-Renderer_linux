@@ -104,8 +104,10 @@ $(OBJDIR)/Obj_Parser/wavefront_obj.o: $(SRCDIR)/Obj_Parser/wavefront_obj$(EXT)
 	$(CC) $(CXXFLAGS) -o $(OBJDIR)/Obj_Parser/wavefront_obj.o -c $(SRCDIR)/Obj_Parser/wavefront_obj$(EXT) $(LDFLAGS)
 
 $(FREEGLUTBIN):
-	$(MAKE) -C $(FREEGLUTDIR) -f MakefileCMake
-	cp -fL $(FREEGLUTDIR)/lib/$(FREEGLUTLIB) $(FREEGLUTBIN)
+	mkdir --parents $(FREEGLUTDIR)/build
+	cd $(FREEGLUTDIR)/build && cmake -D CMAKE_BUILD_TYPE=Release -D FREEGLUT_BUILD_DEMOS=OFF -D FREEGLUT_BUILD_SHARED_LIBS=ON -D FREEGLUT_REPLACE_GLUT=OFF ..
+	$(MAKE) -C $(FREEGLUTDIR)/build all
+	cp -fL $(FREEGLUT) $(FREEGLUTBIN)
 	ln -frs $(FREEGLUTBIN) $(FREEGLUTBINVER)
 
 $(ANTTWEAKBARBIN):

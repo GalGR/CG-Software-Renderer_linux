@@ -3,3 +3,5 @@
 *.d
 **/obj/
 **/dep/
+CMakeCache.txt
+src/freeglut/build/
