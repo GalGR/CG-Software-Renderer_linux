@@ -102,20 +102,26 @@ $(OBJDIR)/Obj_Parser/wavefront_obj.o: $(SRCDIR)/Obj_Parser/wavefront_obj$(EXT)
 	mkdir --parents obj/Obj_Parser
 	$(CC) $(CXXFLAGS) -o $(OBJDIR)/Obj_Parser/wavefront_obj.o -c $(SRCDIR)/Obj_Parser/wavefront_obj$(EXT) $(LDFLAGS)
 
-$(FREEGLUTBIN):
+$(FREEGLUT):
 	mkdir --parents $(FREEGLUTDIR)/build
 	cd $(FREEGLUTDIR)/build && cmake -D CMAKE_BUILD_TYPE=Release -D FREEGLUT_BUILD_DEMOS=OFF -D FREEGLUT_BUILD_SHARED_LIBS=ON -D FREEGLUT_REPLACE_GLUT=OFF ..
 	$(MAKE) -C $(FREEGLUTDIR)/build all
+
+$(FREEGLUTBIN): $(FREEGLUT)
 	cp -fL $(FREEGLUT) $(FREEGLUTBIN)
 	ln -frs $(FREEGLUTBIN) $(FREEGLUTBINVER)
 
-$(ANTTWEAKBARBIN):
+$(ANTTWEAKBAR):
 	$(MAKE) -C $(ANTTWEAKBARDIR)/src
+
+$(ANTTWEAKBARBIN): $(ANTTWEAKBAR)
 	cp -fL $(ANTTWEAKBAR) $(ANTTWEAKBARBIN)
 	ln -frs $(ANTTWEAKBARBIN) $(ANTTWEAKBARBINVER)
 
-$(GLEWBIN):
+$(GLEW):
 	$(MAKE) -C $(GLEWDIR)
+
+$(GLEWBIN): $(GLEW)
 	cp -fL $(GLEW) $(GLEWBIN)
 	ln -frs $(GLEWBIN) $(GLEWBINVER)
 
@@ -133,13 +139,31 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
 ################### Cleaning rules for Unix-based OS ###################
 # Cleans complete project
 .PHONY: clean
-clean:
+clean: cleancg cleanlibs
+
+.PHONY: cleancg
+cleancg:
 	-$(RM) -f $(DELOBJ) $(DEP) $(APPNAME)
-	-$(MAKE) -C $(OSDIALOGDIR) ARCH=$(ARCH) clean
 	-$(RM) -rf $(OBJDIR)/Obj_Parser
-	-$(RM) -f $(BINDIR)/*
+	-$(RM) -rf $(BINDIR)
+
+.PHONY: cleanlibs
+cleanlibs: cleanosdialog cleanfreeglut cleananttweakbar cleanglew
+
+.PHONY: cleanosdialog
+cleanosdialog:
+	-$(MAKE) -C $(OSDIALOGDIR) ARCH=$(ARCH) clean
+
+.PHONY: cleanfreeglut
+cleanfreeglut:
 	-$(RM) -rf $(FREEGLUTDIR)/build
+
+.PHONY: cleananttweakbar
+cleananttweakbar:
 	-$(MAKE) -C $(ANTTWEAKBARDIR)/src clean
+
+.PHONY: cleanglew
+cleanglew:
 	-$(MAKE) -C $(GLEWDIR) clean
 
 # Cleans only all files with the extension .d
