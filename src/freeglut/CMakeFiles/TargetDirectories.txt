@@ -1,8 +1,0 @@
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/install/strip.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/install/local.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/freeglut_static.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/list_install_components.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/rebuild_cache.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/edit_cache.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/freeglut.dir
-/media/gal/Windows8_OS/Linux/CG/src/freeglut/CMakeFiles/install.dir

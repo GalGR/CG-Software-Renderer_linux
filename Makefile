@@ -38,7 +38,7 @@ FREEGLUTNAME = freeglut
 FREEGLUTDIR = $(SRCDIR)/freeglut
 FREEGLUTLIB = lib$(FREEGLUTNAME).so
 FREEGLUTLIBVER = $(FREEGLUTLIB).3
-FREEGLUT = $(FREEGLUTDIR)/lib/lib$(FREEGLUTNAME).so
+FREEGLUT = $(FREEGLUTDIR)/build/lib/$(FREEGLUTLIB)
 FREEGLUTBIN = $(BINDIR)/$(FREEGLUTLIB)
 FREEGLUTBINVER = $(BINDIR)/$(FREEGLUTLIBVER)
 LDFLAGS += -l$(FREEGLUTNAME)
@@ -58,7 +58,6 @@ GLEWNAME = GLEW
 GLEWDIR = $(SRCDIR)/Glew
 GLEWLIB = lib$(GLEWNAME).so
 GLEWLIBVER = $(GLEWLIB).2.1
-# GLEW = $(GLEWLIB:%.so=$(GLEWDIR)/lib/%.so)
 GLEW = $(GLEWDIR)/lib/$(GLEWLIB)
 GLEWBIN = $(BINDIR)/$(GLEWLIB)
 GLEWBINVER = $(BINDIR)/$(GLEWLIBVER)
@@ -81,7 +80,7 @@ WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
 ####################### Targets beginning here #########################
 ########################################################################
 
-all: $(BIN) $(SRCDIR) $(OBJDIR) $(DEPDIR) $(BINDIR)
+all: $(SRCDIR) $(OBJDIR) $(DEPDIR) $(BINDIR) $(BIN)
 
 $(OBJDIR):
 	mkdir --parents $(OBJDIR)
@@ -139,7 +138,7 @@ clean:
 	-$(MAKE) -C $(OSDIALOGDIR) ARCH=$(ARCH) clean
 	-$(RM) -rf $(OBJDIR)/Obj_Parser
 	-$(RM) -f $(BINDIR)/*
-	-$(MAKE) -C $(FREEGLUTDIR) -f MakefileCMake clean
+	-$(RM) -rf $(FREEGLUTDIR)/build
 	-$(MAKE) -C $(ANTTWEAKBARDIR)/src clean
 	-$(MAKE) -C $(GLEWDIR) clean
 

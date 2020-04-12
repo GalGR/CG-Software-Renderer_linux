@@ -55,7 +55,7 @@
 #include <X11/keysymdef.h>
 
 bool key_is_pressed(KeySym ks) {
-	Display *dpy = XOpenDisplay(":1");
+	Display *dpy = XOpenDisplay(NULL);
 	char keys_return[32];
 	XQueryKeymap(dpy, keys_return);
 	KeyCode kc2 = XKeysymToKeycode(dpy, ks);
