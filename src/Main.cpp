@@ -272,9 +272,9 @@ plf::nanotimer render_timer;
 // Control loop timer
 plf::nanotimer control_timer;
 // Elapsed render time
-double render_elapsed_us;
+UINT32 render_elapsed_us;
 // Elapsed control loop time
-double control_elapsed_us;
+UINT32 control_elapsed_us;
 
 double g_Scale = 1.0;
 //double g_quaternion[4] = {0.0, 0.0, 0.0, 1.0};
@@ -394,8 +394,8 @@ int main(int argc, char *argv[])
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL, NULL);
 	// Initialize the times
-	render_elapsed_us = 0.0;
-	control_elapsed_us = 0.0;
+	render_elapsed_us = 0;
+	control_elapsed_us = 0;
 	// Set GLUT callbacks
 	glutDisplayFunc(display);
 	glutReshapeFunc(Reshape);
@@ -490,8 +490,8 @@ int main(int argc, char *argv[])
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRO(bar, "Render (us)", TW_TYPE_DOUBLE, &render_elapsed_us, " help='Shows the drawing time in micro seconds' ");
-	TwAddVarRO(bar, "Control (us)", TW_TYPE_DOUBLE, &control_elapsed_us, " help='Shows the main control function time in micro seconds' ");
+	TwAddVarRO(bar, "Render (us)", TW_TYPE_UINT32, &render_elapsed_us, " help='Shows the drawing time in micro seconds' ");
+	TwAddVarRO(bar, "Control (us)", TW_TYPE_UINT32, &control_elapsed_us, " help='Shows the main control function time in micro seconds' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 	
@@ -781,7 +781,7 @@ void display()
  	drawScene();
 
 	//time measuring - don't delete
-	render_elapsed_us = render_timer.get_elapsed_us();
+	render_elapsed_us = static_cast<UINT32>(render_timer.get_elapsed_us());
 
 	// Draw tweak bars
 	TwDraw();
@@ -1260,7 +1260,7 @@ void Timer(int value) {
 	keyModPress.clear_list();
 
 	// End the control time measure
-	control_elapsed_us = control_timer.get_elapsed_us();
+	control_elapsed_us = static_cast<UINT32>(control_timer.get_elapsed_us());
 
 	glutTimerFunc(time_frame_ms, Timer, frame_number); // Register the timer callback again
 	TwRefreshBar(bar);
