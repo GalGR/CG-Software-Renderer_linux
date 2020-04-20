@@ -3,12 +3,13 @@
 #include <AntTweakBar/include/AntTweakBar.h>
 #include <Glew/include/GL/glew.h>
 #include <freeglut/include/GL/freeglut.h>
+#include <plf_nanotimer/plf_nanotimer.h>
 
 #include <vector>
 #if defined(_WIN32)
 #include <Windows.h>
 #elif defined(__linux__)
-#include "MeasureTime.h"
+// #include "MeasureTime.h"
 #endif
 #include <assert.h>
 #include <iostream>
@@ -266,13 +267,14 @@ MyScreen screen = { START_WIDTH, START_HEIGHT };
 //size_t g_width = START_WIDTH;
 //size_t g_height = START_HEIGHT;
 
-// Render time
-LARGE_INTEGER RenderStartingTime, RenderEndingTime, RenderElapsedMicroseconds;
-
-// Control time
-LARGE_INTEGER ControlStartingTime, ControlEndingTime, ControlElapsedMicroseconds;
-// 
-LARGE_INTEGER Frequency;
+// Render timer
+plf::nanotimer render_timer;
+// Control loop timer
+plf::nanotimer control_timer;
+// Elapsed render time
+double render_elapsed_us;
+// Elapsed control loop time
+double control_elapsed_us;
 
 double g_Scale = 1.0;
 //double g_quaternion[4] = {0.0, 0.0, 0.0, 1.0};
@@ -391,8 +393,9 @@ int main(int argc, char *argv[])
 	initGraphics(argc, argv);
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL, NULL);
-	//initialize the timer frequency
-	QueryPerformanceFrequency(&Frequency); 
+	// Initialize the times
+	render_elapsed_us = 0.0;
+	control_elapsed_us = 0.0;
 	// Set GLUT callbacks
 	glutDisplayFunc(display);
 	glutReshapeFunc(Reshape);
@@ -487,8 +490,8 @@ int main(int argc, char *argv[])
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRO(bar, "Render (us)", TW_TYPE_UINT32, &RenderElapsedMicroseconds.LowPart, " help='Shows the drawing time in micro seconds' ");
-	TwAddVarRO(bar, "Control (us)", TW_TYPE_UINT32, &ControlElapsedMicroseconds.LowPart, " help='Shows the main control function time in micro seconds' ");
+	TwAddVarRO(bar, "Render (us)", TW_TYPE_DOUBLE, &render_elapsed_us, " help='Shows the drawing time in micro seconds' ");
+	TwAddVarRO(bar, "Control (us)", TW_TYPE_DOUBLE, &control_elapsed_us, " help='Shows the main control function time in micro seconds' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 	
@@ -773,15 +776,12 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//time measuring - don't delete
-	QueryPerformanceCounter(&RenderStartingTime);
+	render_timer.start();
 
  	drawScene();
 
 	//time measuring - don't delete
-	QueryPerformanceCounter(&RenderEndingTime);
-	RenderElapsedMicroseconds.QuadPart = RenderEndingTime.QuadPart - RenderStartingTime.QuadPart;
-	RenderElapsedMicroseconds.QuadPart *= 1000000;
-	RenderElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+	render_elapsed_us = render_timer.get_elapsed_us();
 
 	// Draw tweak bars
 	TwDraw();
@@ -1098,7 +1098,7 @@ void update_motion(Motion &motion,
 
 void Timer(int value) {
 	// Measure the time it takes to do the main control loop
-	QueryPerformanceCounter(&ControlStartingTime);
+	control_timer.start();
 
 	if (frame_number == (unsigned int)value) { // No frame was rendered at that time frame
 		glutTimerFunc(time_frame_ms, Timer, value); // Register the timer callback again -- with the same frame number
@@ -1260,10 +1260,7 @@ void Timer(int value) {
 	keyModPress.clear_list();
 
 	// End the control time measure
-	QueryPerformanceCounter(&ControlEndingTime);
-	ControlElapsedMicroseconds.QuadPart = ControlEndingTime.QuadPart - ControlStartingTime.QuadPart;
-	ControlElapsedMicroseconds.QuadPart *= 1000000;
-	ControlElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+	control_elapsed_us = control_timer.get_elapsed_us();
 
 	glutTimerFunc(time_frame_ms, Timer, frame_number); // Register the timer callback again
 	TwRefreshBar(bar);
