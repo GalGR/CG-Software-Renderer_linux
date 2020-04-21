@@ -156,7 +156,7 @@ void Draw::drawScene(
 		normals_color
 	);
 
-#ifdef SCREEN_PIXELS_BUFFER_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_BUFFER
 	// Render the pixels
 	//pixels.getListPixels(list_pixels);
 	//if (list_pixels.size() > 0) {
@@ -196,7 +196,7 @@ void Draw::calcScene(
 		pixels,
 		screen
 	);
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
 	// Render the pixels
 	if (pixels.size() > 0) {
 		renderer.drawPixels(pixels);
@@ -217,7 +217,7 @@ void Draw::calcScene(
 		pixels,
 		screen
 	);
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
 	// Render the pixels
 	if (pixels.size() > 0) {
 		renderer.drawPixels(pixels);
@@ -241,7 +241,7 @@ void Draw::calcScene(
 		screen,
 		obj_color
 	);
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
 	// Render the pixels
 	if (pixels.size() > 0) {
 		renderer.drawPixels(pixels);
@@ -258,7 +258,7 @@ void Draw::calcScene(
 		screen,
 		bbox_color
 	);
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
 	// Render the pixels
 	if (pixels.size() > 0) {
 		renderer.drawPixels(pixels);
@@ -277,7 +277,7 @@ void Draw::calcScene(
 		object.normals_length,
 		normals_color
 	);
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
 	// Render the pixels
 	if (pixels.size() > 0) {
 		renderer.drawPixels(pixels);

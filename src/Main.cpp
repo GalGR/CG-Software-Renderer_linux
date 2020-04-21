@@ -2,14 +2,11 @@
 
 #include <AntTweakBar/include/AntTweakBar.h>
 #include <Glew/include/GL/glew.h>
-#include <freeglut/include/GL/freeglut.h>
 #include <plf_nanotimer/plf_nanotimer.h>
 
 #include <vector>
 #if defined(_WIN32)
 #include <Windows.h>
-#elif defined(__linux__)
-// #include "MeasureTime.h"
 #endif
 #include <assert.h>
 #include <iostream>
@@ -21,8 +18,6 @@
 #include "osstring.h"
 
 // My include:
-
-// #define SCREEN_PIXELS_BUFFER_IMPLEMENT
 
 #include <map>
 #include <tuple>
@@ -613,6 +608,9 @@ void initVariables() {
 }
 
 void initKeybindings() {
+	// Bind keyboard
+	keyBind.set()
+
 	// Alphabetical keys bindings
 	keyAlpBind.set(DEFAULT_CAM_LEFT, Action::CAM_LEFT);
 	keyAlpBind.set(DEFAULT_CAM_RIGHT, Action::CAM_RIGHT);
@@ -977,11 +975,10 @@ void performAction(Action action, bool press) {
 	case Action::MOUSE_LOOK:
 		if (press) {
 			if (!actions_done[Action::MOUSE_LOOK]) { // Switch to mouse look mode
-				glutSetCursor(GLUT_CURSOR_NONE); // Make the cursor invisible
-				mouse.reset();
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Make the cursor invisible
 			}
 			else { // Switch to normal cursor mode
-				glutSetCursor(GLUT_CURSOR_INHERIT); // Make the cursor visible
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // Make the cursor visible
 			}
 			mouse.update_rest(screen.mid_point());
 			actions_done[Action::MOUSE_LOOK].toggle();

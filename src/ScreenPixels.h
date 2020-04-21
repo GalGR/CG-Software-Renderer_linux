@@ -1,13 +1,11 @@
 #pragma once
 
-#ifdef SCREEN_PIXELS_BUFFER_IMPLEMENT
+#if defined(SCREEN_PIXELS_IMPLEMENT_BUFFER)
 
 #include "ScreenPixels_Buffer_.h"
 
-#else
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#elif defined(SCREEN_PIXELS_IMPLEMENT_LIST)
 
 #include "ScreenPixels_List_.h"
 
-#endif // SCREEN_PIXELS_LIST_IMPLEMENT
-#endif // SCREEN_PIXELS_BUFFER_IMPLEMENT
+#endif

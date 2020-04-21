@@ -27,7 +27,8 @@ void Renderer::drawPixels(const std::vector<Pixel>& pixels)
 	glDrawArrays(GL_POINTS, 0, numPixels);
 }
 
-#ifdef SCREEN_PIXELS_BUFFER_IMPLEMENT
+#if defined(SCREEN_PIXELS_IMPLEMENT_BUFFER)
+
 //this function turns on the specified pixels on screen
 void Renderer::drawScreenPixels(const ScreenPixels& pixels)
 {
@@ -37,8 +38,7 @@ void Renderer::drawScreenPixels(const ScreenPixels& pixels)
 	glDrawPixels(pixels.width(), pixels.height(), GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 }
 
-#else
-#ifdef SCREEN_PIXELS_LIST_IMPLEMENT
+#elif defined(SCREEN_PIXELS_IMPLEMENT_LIST)
 
 //this function turns on the specified pixels on screen
 void Renderer::drawScreenPixels(const ScreenPixels &pixels)
@@ -54,5 +54,4 @@ void Renderer::drawScreenPixels(const ScreenPixels &pixels)
 	glDrawArrays(GL_POINTS, 0, numPixels);
 }
 
-#endif // SCREEN_PIXELS_LIST_IMPLEMENT
-#endif // SCREEN_PIXELS_BUFFER_IMPLEMENT
+#endif

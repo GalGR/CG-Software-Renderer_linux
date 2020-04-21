@@ -1,6 +1,6 @@
 #include "ScreenPixels.h"
 
-#ifdef SCREEN_PIXELS_BUFFER_IMPLEMENT
+#ifdef SCREEN_PIXELS_IMPLEMENT_BUFFER
 
 ScreenPixels::ScreenPixels() {
 	width_ = 0;

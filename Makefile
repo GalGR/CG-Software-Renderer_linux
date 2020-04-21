@@ -1,10 +1,9 @@
-SCREEN_PIXELS_IMPLEMENTATION = SCREEN_PIXELS_BUFFER_IMPLEMENT
+SCREEN_PIXELS_IMPLEMENTATION = SCREEN_PIXELS_IMPLEMENT_BUFFER
 
 MODE ?= release
 
 CC = g++
 CXXFLAGS = -std=c++14 -Wall -Isrc -D$(SCREEN_PIXELS_IMPLEMENTATION) -include cmath -include algorithm
-# LDFLAGS = -Wl,-rpath,$$ORIGIN -lX11 -Lbin -lfreeglut -lAntTweakBar -lGLEW -lGLU -lGL
 LDFLAGS = -Wl,-rpath,$$ORIGIN:$$PWD:. -lX11
 
 ifeq ($(MODE),debug)
@@ -15,7 +14,6 @@ endif
 
 APPNAME = cg
 EXT = .cpp
-# SRCDIR = src
 SRCDIR = src
 OBJDIR = obj
 DEPDIR = dep
@@ -30,18 +28,16 @@ OSDIALOGNAME = $(shell make -s C $(OSDIALOGDIR) ARCH=$(ARCH) name)
 OSDIALOGLIB = $(shell make -s -C $(OSDIALOGDIR) ARCH=$(ARCH) libname)
 OSDIALOG = $(OSDIALOGDIR)/$(OSDIALOGLIB)
 LDFLAGS += $(shell make -s -C $(OSDIALOGDIR) ARCH=$(ARCH) ldflags)
-# LDFLAGS += -l$(OSDIALOGNAME)
-# LDFLAGS += -L$(OSDIALOGDIR) -l$(shell make -s -C $(OSDIALOGDIR) ARCH=$(ARCH) name)
 
-# Freeglut
-FREEGLUTNAME = freeglut
-FREEGLUTDIR = $(SRCDIR)/freeglut
-FREEGLUTLIB = lib$(FREEGLUTNAME).so
-FREEGLUTLIBVER = $(FREEGLUTLIB).3
-FREEGLUT = $(FREEGLUTDIR)/build/lib/$(FREEGLUTLIB)
-FREEGLUTBIN = $(BINDIR)/$(FREEGLUTLIB)
-FREEGLUTBINVER = $(BINDIR)/$(FREEGLUTLIBVER)
-LDFLAGS += -l$(FREEGLUTNAME)
+# GLFW
+GLFWNAME = glfw
+GLFWDIR = $(SRCDIR)/glfw
+GLFWLIB = lib$(GLFWNAME).so
+GLFWLIBVER = $(GLFWLIB).3.4
+GLFW = $(GLFWDIR)/build/src/$(GLFWLIB)
+GLFWBIN = $(BINDIR)/$(GLFWLIB)
+GLFWBINVER = $(BINDIR)/$(GLFWLIBVER)
+LDFLAGS += -l$(GLFWNAME)
 
 # AntTweakBar
 ANTTWEAKBARNAME = AntTweakBar
@@ -66,7 +62,6 @@ LDFLAGS += -l$(GLEWNAME) -lGLU -lGL
 SRC = $(wildcard $(SRCDIR)/*$(EXT))
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
 DEP = $(OBJ:$(OBJDIR)/%.o=$(DEPDIR)/%.d)
-# DEP = $(OBJ:$(OBJDIR)/%.o=%.d)
 BIN = $(BINDIR)/$(APPNAME)
 # UNIX-based OS variables & settings
 RM = rm
@@ -92,7 +87,7 @@ $(BINDIR):
 	mkdir --parents $(BINDIR)
 
 # Builds the app
-$(BIN): $(OBJ) $(OSDIALOG) $(OBJDIR)/Obj_Parser/wavefront_obj.o $(FREEGLUTBIN) $(ANTTWEAKBARBIN) $(GLEWBIN)
+$(BIN): $(OBJ) $(OSDIALOG) $(OBJDIR)/Obj_Parser/wavefront_obj.o $(GLFWBIN) $(ANTTWEAKBARBIN) $(GLEWBIN)
 	$(CC) $(CXXFLAGS) -o $@ $(OBJ) $(OSDIALOG) $(OBJDIR)/Obj_Parser/wavefront_obj.o $(LDFLAGS)
 
 $(OSDIALOG):
@@ -102,14 +97,14 @@ $(OBJDIR)/Obj_Parser/wavefront_obj.o: $(SRCDIR)/Obj_Parser/wavefront_obj$(EXT)
 	mkdir --parents obj/Obj_Parser
 	$(CC) $(CXXFLAGS) -o $(OBJDIR)/Obj_Parser/wavefront_obj.o -c $(SRCDIR)/Obj_Parser/wavefront_obj$(EXT) $(LDFLAGS)
 
-$(FREEGLUT):
-	mkdir --parents $(FREEGLUTDIR)/build
-	cd $(FREEGLUTDIR)/build && cmake -D CMAKE_BUILD_TYPE=Release -D FREEGLUT_BUILD_DEMOS=OFF -D FREEGLUT_BUILD_SHARED_LIBS=ON -D FREEGLUT_REPLACE_GLUT=OFF ..
-	$(MAKE) -C $(FREEGLUTDIR)/build all
+$(GLFW):
+	mkdir --parents $(GLFWDIR)/build
+	cd $(GLFWDIR)/build && cmake -DBUILD_SHARED_LIBS=ON -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF -DGLFW_VULKAN_STATIC=OFF ..
+	cmake --build $(GLFWDIR)/build
 
-$(FREEGLUTBIN): $(FREEGLUT)
-	cp -fL $(FREEGLUT) $(FREEGLUTBIN)
-	ln -frs $(FREEGLUTBIN) $(FREEGLUTBINVER)
+$(GLFWBIN): $(GLFW)
+	cp -fL $(GLFW) $(GLFWBIN)
+	ln -frs $(GLFWBIN) $(GLFWBINVER)
 
 $(ANTTWEAKBAR):
 	$(MAKE) -C $(ANTTWEAKBARDIR)/src
@@ -127,7 +122,7 @@ $(GLEWBIN): $(GLEW)
 
 # Creates the dependecy rules
 $(DEPDIR)/%.d: $(SRCDIR)/%$(EXT)
-	@$(CPP) $(CXXFLAGS) $< -MM -MT $(@:$(DEPDIR)/%.d=$(OBJDIR)/%.o) >$@
+	@$(CC) $(CXXFLAGS) $< -MM -MT $(@:$(DEPDIR)/%.d=$(OBJDIR)/%.o) >$@
 
 # Includes all .d files (execute all the dependencies)
 -include $(DEP)
@@ -148,15 +143,15 @@ cleancg:
 	-$(RM) -rf $(BINDIR)
 
 .PHONY: cleanlibs
-cleanlibs: cleanosdialog cleanfreeglut cleananttweakbar cleanglew
+cleanlibs: cleanosdialog cleanglfw cleananttweakbar cleanglew
 
 .PHONY: cleanosdialog
 cleanosdialog:
 	-$(MAKE) -C $(OSDIALOGDIR) ARCH=$(ARCH) clean
 
-.PHONY: cleanfreeglut
-cleanfreeglut:
-	-$(RM) -rf $(FREEGLUTDIR)/build
+.PHONY: cleanglfw
+cleanglfw:
+	-$(RM) -rf $(GLFWDIR)/build
 
 .PHONY: cleananttweakbar
 cleananttweakbar:

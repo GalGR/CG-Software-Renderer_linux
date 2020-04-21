@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <freeglut/include/GL/freeglut.h>
+#include <Glew/include/GL/glew.h>
+#include <glfw/include/GLFW/glfw3.h>
 
 #include "Pixel.h"
 #include "ScreenPixels.h"
