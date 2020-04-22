@@ -1,7 +1,7 @@
 #pragma once
 
-template <typename Action_T>
-struct ActionsDone {
+template <typename Key_T>
+struct ToggleMap {
 	template <bool value>
 	struct ToggleBool {
 		bool val = value;
@@ -16,9 +16,9 @@ struct ActionsDone {
 		ToggleBool<value> &toggle() { this->val = !(this->val); return *this; }
 	};
 
-	typedef std::map<Action_T, ToggleBool<false>> ActionsDoneMap_T;
-	ActionsDoneMap_T actions_done_map;
+	typedef std::map<Key_T, ToggleBool<false>> KeyBoolMap_T;
+	KeyBoolMap_T key_bool_map;
 
-	ToggleBool<false> &operator [](const Action_T &action) { return this->actions_done_map[action]; }
-	ActionsDoneMap_T &operator =(const ActionsDoneMap_T &actions_done_map) { return this->actions_done_map = actions_done_map; }
+	ToggleBool<false> &operator [](const Key_T &key) { return this->key_bool_map[key]; }
+	KeyBoolMap_T &operator =(const KeyBoolMap_T &key_bool_map) { return this->key_bool_map = key_bool_map; }
 };

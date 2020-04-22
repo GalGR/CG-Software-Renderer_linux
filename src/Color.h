@@ -25,20 +25,14 @@ enum COLORS_ENUMS {
 	CYAN	= (UINT32)0xff'ff'ff'00,
 };
 
-
-struct RGBA {
-	UINT8 r;
-	UINT8 g;
-	UINT8 b;
-	UINT8 a;
-
-	inline const UINT8 &operator[](int i) const { return (&r)[i]; }
-	inline UINT8 &operator[](int i) { return (&r)[i]; }
-};
-
 union Color {
 	UINT32 data;
-	RGBA rgba;
+	struct {
+		UINT8 r;
+		UINT8 g;
+		UINT8 b;
+		UINT8 a;
+	};
 
 	inline Color() = default;
 	inline Color(UINT32 data) : data(data) {}
@@ -46,6 +40,6 @@ union Color {
 	inline Color& operator=(UINT32 data) { this->data = data; return *this; }
 	inline operator UINT32() const { return data; }
 
-	inline const UINT8 &operator[](int i) const { return rgba[i]; }
-	inline UINT8 &operator[](int i) { return rgba[i]; }
+	inline const UINT8 &operator[](int i) const { return (&r)[i]; }
+	inline UINT8 &operator[](int i) { return (&r)[i]; }
 };

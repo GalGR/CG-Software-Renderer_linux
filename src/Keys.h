@@ -7,7 +7,7 @@
 #include "TypeDefVal.h"
 
 template <typename Key_T, typename Val_T, Key_T defKey, Val_T defVal, typename Compare_KeyVal = std::less<Key_T>, typename Compare_ValKey = std::less<Val_T>>
-class KeyboardBind {
+class KeyBind {
 public:
 	typedef std::map<Key_T, TypeDefVal<Val_T, defVal>, Compare_KeyVal> Key2Val;
 	typedef std::map<Val_T, TypeDefVal<Key_T, defKey>, Compare_ValKey> Val2Key;
@@ -27,7 +27,7 @@ public:
 };
 
 template <typename Key_T>
-class KeyboardPress {
+class KeyPress {
 public:
 	struct KeyAndPress {
 		Key_T key;
