@@ -1,22 +1,20 @@
 #pragma once
 
-#include <array>
-
 #define EPS 1.0E-10
 
 struct Vector4 {
-	std::array<double, 4> arr;
+	double x, y, z, w;
 
 	// Constructors
-	Vector4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 1.0) : arr{ x, y, z, w } {}
+	Vector4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 1.0) : x(x), y(y), z(z), w(w) {}
 
 	// Get the Homogeneous coordinates
-	double &operator [](size_t i) { return arr[i]; }
-	const double &operator [](size_t i) const { return arr[i]; }
+	double &operator [](size_t i) { return (&x)[i]; }
+	const double &operator [](size_t i) const { return (&x)[i]; }
 
 	// Get the Euclidean coordinates
-	double euclid(size_t i) { return arr[i] / arr[3]; }
-	double euclid(size_t i) const { return arr[i] / arr[3]; }
+	double euclid(size_t i) { return (&x)[i] / (&x)[3]; }
+	double euclid(size_t i) const { return (&x)[i] / (&x)[3]; }
 	double operator ()(size_t i) { return this->euclid(i); }
 	double operator ()(size_t i) const { return this->euclid(i); }
 
