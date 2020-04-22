@@ -1,9 +1,11 @@
 #include <iostream>
 
-#include <AntTweakBar/include/AntTweakBar.h>
+#include <AntTweakBar/TweakBar/include/AntTweakBar.h>
 #include <Glew/include/GL/glew.h>
+#include <glfw/include/GLFW/glfw3.h>
 #include <plf_nanotimer/plf_nanotimer.h>
 
+#include <thread>
 #include <vector>
 #if defined(_WIN32)
 #include <Windows.h>
@@ -36,59 +38,12 @@
 
 #include "static_vector.h"
 
-#include "Keyboard.h"
+#include "Keys.h"
 #include "Mouse.h"
 #include "Motion.h"
 #include "Screen.h"
-#include "ActionsDone.h"
+#include "ToggleMap.h"
 #include "PI.h"
-
-#if defined(_WIN32)
-#include <Windows.h>
-#elif defined(__linux__)
-#include <X11/Xlib.h>
-#include <X11/keysym.h>
-#include <X11/keysymdef.h>
-
-bool key_is_pressed(KeySym ks) {
-	Display *dpy = XOpenDisplay(NULL);
-	char keys_return[32];
-	XQueryKeymap(dpy, keys_return);
-	KeyCode kc2 = XKeysymToKeycode(dpy, ks);
-	bool isPressed = !!(keys_return[kc2 >> 3] & (1 << (kc2 & 7)));
-	XCloseDisplay(dpy);
-	return isPressed;
-}
-
-enum VK_Keys {
-	VK_SHIFT = 0x10,
-	VK_CONTROL = 0x11,
-	VK_MENU = 0x12,
-};
-
-int GetKeyState(VK_Keys vk_key) {
-	KeySym keysym_l;
-	KeySym keysym_r;
-	switch (vk_key) {
-	case VK_SHIFT:
-		keysym_l = XK_Shift_L;
-		keysym_r = XK_Shift_R;
-		break;
-	case VK_CONTROL:
-		keysym_l = XK_Control_L;
-		keysym_r = XK_Control_R;
-		break;
-	case VK_MENU:
-		keysym_l = XK_Alt_L;
-		keysym_r = XK_Alt_R;
-		break;
-	}
-	bool is_pressed_l = key_is_pressed(keysym_l);
-	bool is_pressed_r = key_is_pressed(keysym_r);
-	if (is_pressed_l || is_pressed_r) return 0x8000;
-	return 0x0;
-}
-#endif
 
 // My macros:
 #define START_WIDTH 960
@@ -138,99 +93,31 @@ static inline int in_range(int p, int lo, int hi) {
 #define INITIAL_LIGHT2_MODE INITIAL_LIGHTING_MODE
 #define INITIAL_SHADING_MODE SHADING_GOURAUD
 
-enum class ModifierKey {
-	NONE,
-	SHIFT,
-	CTRL,
-	ALT
-};
+// Number of hardware supported parallel threads
+int num_hw_threads;
 
-// Default keybindings
-enum DefaultKeybind {
-	DEFAULT_MOUSE_LOOK = 'f',
-	DEFAULT_CAM_LEFT = 'a',
-	DEFAULT_CAM_RIGHT = 'd',
-	DEFAULT_CAM_FORWARD = 'w',
-	DEFAULT_CAM_BACKWARD = 's',
-	DEFAULT_CAM_UP = ' ',
-	DEFAULT_CAM_DOWN = (int)ModifierKey::SHIFT,
-	DEFAULT_BOUNDING_BOX = 'b',
-	DEFAULT_VERTEX_NORMALS = 'n',
-	DEFAULT_WORLD_AXES = 'x',
-	DEFAULT_RESET_SCENE = 'r',
-	DEFAULT_OBJECT_AXES = 'u',
-	DEFAULT_VIEW_OBJECT = 'v',
-	DEFAULT_OBJ_LEFT = GLUT_KEY_LEFT,
-	DEFAULT_OBJ_RIGHT = GLUT_KEY_RIGHT,
-	DEFAULT_OBJ_FORWARD = GLUT_KEY_UP,
-	DEFAULT_OBJ_BACKWARD = GLUT_KEY_DOWN,
-	DEFAULT_OBJ_UP = GLUT_KEY_PAGE_UP,
-	DEFAULT_OBJ_DOWN = GLUT_KEY_PAGE_DOWN,
-	DEFAULT_OBJ_SCALE_INC = '+',
-	DEFAULT_OBJ_SCALE_DEC = '-',
-	DEFAULT_OBJ_ROTATE = GLUT_RIGHT_BUTTON,
-	DEFAULT_PROJECTION_TOGGLE = 'p',
-	DEFAULT_FPS_CAMERA = 'g',
-	DEFAULT_OBJ_ALT_MOVE = (int)ModifierKey::ALT,
-	DEFAULT_ESCAPE_ALL = 27, // Escape ASCII code
-	DEFAULT_OBJ_CONTROL_MODEL = (int)ModifierKey::CTRL,
-};
+// Number of control threads
+int num_control_threads;
 
-// Action enums
-enum class Action {
-	NONE = -1,
-	MOUSE_LOOK,
-	CAM_LEFT,
-	CAM_RIGHT,
-	CAM_FORWARD,
-	CAM_BACKWARD,
-	CAM_UP,
-	CAM_DOWN,
-	BOUNDING_BOX,
-	FACE_NORMALS,
-	VERTEX_NORMALS,
-	WORLD_AXES,
-	RESET_SCENE,
-	OBJECT_AXES,
-	VIEW_OBJECT,
-	OBJ_LEFT,
-	OBJ_RIGHT,
-	OBJ_FORWARD,
-	OBJ_BACKWARD,
-	OBJ_UP,
-	OBJ_DOWN,
-	OBJ_SCALE_INC,
-	OBJ_SCALE_DEC,
-	OBJ_ROTATE,
-	PROJECTION_TOGGLE,
-	FPS_CAMERA,
-	OBJ_ALT_MOVE,
-	ESCAPE_ALL,
-	OBJ_CONTROL_MODEL,
-	TOTAL_NUMBER_OF_ACTIONS
-	// An enum to count the number of actions (assuming they start from 0 and don't jump randomly)
-};
+// Number of render threads
+int num_render_threads;
+
+#include "DefaultKeybind.h"
+
+#include "Action.h"
 
 
 // Keyboard-Action variables
-typedef KeyboardPress<unsigned char> KeyAlpPress;
-typedef KeyboardPress<int> KeySplPress;
-typedef KeyboardPress<ModifierKey> KeyModPress;
-typedef KeyboardPress<int> MouseBttnPress;
-typedef KeyboardBind<unsigned char, Action, 0, Action::NONE> KeyAlpBind;
-typedef KeyboardBind<int, Action, 0, Action::NONE> KeySplBind;
-typedef KeyboardBind<ModifierKey, Action, ModifierKey::NONE, Action::NONE> KeyModBind;
-typedef KeyboardBind<int, Action, 0, Action::NONE> MouseBttnBind;
-KeyAlpPress keyAlpPress;
-KeySplPress keySplPress;
-KeyModPress keyModPress;
-MouseBttnPress mouseBttnPress;
-KeyAlpBind keyAlpBind;
-KeySplBind keySplBind;
-KeyModBind keyModBind;
-MouseBttnBind mouseBttnBind;
-//typedef std::map<Action, TypeDefVal<bool, false>> ActionsDone;
-ActionsDone<Action> actions_done;
+typedef KeyPress<int> KeyboardPress;
+typedef KeyPress<int> MousePress;
+typedef KeyBind<int, Action, DEFAULT_NONE, Action::NONE> KeyboardBind;
+typedef KeyBind<int, Action, DEFAULT_NONE, Action::NONE> MouseBind;
+KeyboardPress keyboardPress;
+MousePress mousePress;
+KeyboardBind keyboardBind;
+MouseBind mouseBind;
+//typedef std::map<Action, TypeDefVal<bool, false>> ToggleMap;
+ToggleMap<Action> state;
 
 // State variables
 size_t time_frame_ms = 16;
@@ -256,6 +143,9 @@ TwType shadingTwType;
 
 // AntTweakBar
 TwBar* bar;
+
+// GLFW window
+GLFWwindow *window = NULL;
 
 // Screen dimensions
 MyScreen screen = { START_WIDTH, START_HEIGHT };
@@ -332,29 +222,39 @@ Color normals_color = YELLOW;
 // Material
 Material material;
 
+void assert_m(const bool expr, const char *err) {
+	if (!expr) {
+		std::cerr << err << std::endl;
+		exit(1);
+	}
+}
+
 void TW_CALL loadOBJModel(void* clientData);
 void initScene();
 void initGraphics(int argc, char *argv[]);
 static inline void drawScene();
 void display();
-void Reshape(int width, int height);
-void MouseButton(int button, int state, int x, int y);
-void MouseMotion(int x, int y);
+void window_size_callback(int width, int height);
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
+void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void PassiveMouseMotion(int x, int y);
 void KeyboardDown(unsigned char k, int x, int y);
 void SpecialDown(int k, int x, int y);
-void Terminate(void);
+void terminate(void);
 
 void KeyboardUp(unsigned char k, int x, int y);
 void SpecialUp(int k, int x, int y);
 
+void initCallbacks();
+void initTweakBar();
 void initMaterial();
 void storeMaterial();
 void loadMaterial();
 void initObject();
 void initVariables();
 void initKeybindings();
-void Timer(int value); // Timer callback function
+void control_loop(int value);
 void performAction(Action action, bool press);
 void update_motion(Motion &motion,
 	Action left, Action right,
@@ -381,46 +281,75 @@ void TW_CALL getLight2PosDir(void *value, void *clientData) { *(std::array<doubl
 
 int main(int argc, char *argv[])
 {
+	std::atexit(terminate);
+
+	// Get the number of hardware supported parallel threads
+	num_hw_threads = std::thread::hardware_concurrency();
+	// Appoint one control thread
+	num_control_threads = 1;
+	// Appoint the remaining threads (or at least one) to rendering
+	num_render_threads = num_hw_threads - num_control_threads;
+	if (num_render_threads <= 0) num_render_threads = 1;
+
 	// Initialize the keybindings
 	initKeybindings();
 
-	// Initialize openGL, glut, glew
+	// Initialize openGL, glfw, glew
 	initGraphics(argc, argv);
+
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL, NULL);
+
 	// Initialize the times
 	render_elapsed_us = 0;
 	control_elapsed_us = 0;
-	// Set GLUT callbacks
+
+	// Set GLFW callbacks
+	initCallbacks();
 	glutDisplayFunc(display);
-	glutReshapeFunc(Reshape);
-	glutMouseFunc(MouseButton);
-	glutMotionFunc(MouseMotion);
-	glutPassiveMotionFunc(PassiveMouseMotion);
-	glutKeyboardFunc(KeyboardDown);
-	glutSpecialFunc(SpecialDown);
+
 
 	glutKeyboardUpFunc(KeyboardUp);
 	glutSpecialFunc(SpecialDown);
 	glutSpecialUpFunc(SpecialUp);
 
-	glutIgnoreKeyRepeat(true);
-	glutTimerFunc(time_frame_ms, Timer, frame_number); // Timer callback function
-	
-	//send 'glutGetModifers' function pointer to AntTweakBar.
-	//required because the GLUT key event functions do not report key modifiers states.
-	//TwGLUTModifiersFunc(glutGetModifiers);
+	glutTimerFunc(time_frame_ms, control_loop, frame_number); // Timer callback function
 
-
-	atexit(Terminate);  //called after glutMainLoop ends
-
+	// Teminates AntTweakBar and GLFW on program exit
+	atexit(terminate);
 
 	// Initialize all the other variables
 	initVariables();
 
-
 	// Create a tweak bar
-	//TwBar* bar = TwNewBar("TweakBar");
+	initTweakBar();
+
+	// Reserve the bounding box buffers
+	bbox_buffers.clear_reserve_resize(BOUNDING_BOX_VERTICES);
+
+	// Reserve the world axes buffers
+	axes_buffers.clear_reserve_resize(WORLD_AXES_VERTICES);
+
+
+	// GLFW main loop
+	while (glfwWindowShouldClose(window)) {
+
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	return 0;
+}
+
+void initCallbacks() {
+	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetCursorPosCallback(window, cursor_position_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetKeyCallback(window, keyboard_callback);
+}
+
+void initTweakBar() {
 	bar = TwNewBar("TweakBar");
 
 	TwDefine(
@@ -497,18 +426,6 @@ int main(int argc, char *argv[])
 	//TwAddVarRW(bar, "ObjRotation", TW_TYPE_QUAT4D, &g_quaternion, " label='Object rotation' opened=true help='Change the object orientation.' ");
 
 	TwAddButton(bar, "open", loadOBJModel, NULL, " label='Open OBJ File...' ");
-
-	// Reserve the bounding box buffers
-	bbox_buffers.clear_reserve_resize(BOUNDING_BOX_VERTICES);
-
-	// Reserve the world axes buffers
-	axes_buffers.clear_reserve_resize(WORLD_AXES_VERTICES);
-
-
-	// Call the GLUT main loop
-	glutMainLoop();
-
-	return 0;
 }
 
 void initMaterial() {
@@ -593,58 +510,53 @@ void initVariables() {
 	camera.proj_type = ProjectionType::PERSPECTIVE;
 
 	// Initialize the mouse
-	mouse = Mouse(screen.mid_point());
-	glutSetCursor(GLUT_CURSOR_INHERIT); // Make the cursor visible
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	mouse = Mouse(window, xpos, ypos);
+	mouse.normal(); // Make the cursor visible
 
 	// Initialize the actions
-	actions_done[Action::BOUNDING_BOX] = false;
-	actions_done[Action::VERTEX_NORMALS] = false;
-	actions_done[Action::WORLD_AXES] = true;
-	actions_done[Action::MOUSE_LOOK] = false;
-	actions_done[Action::FPS_CAMERA] = false;
-	actions_done[Action::OBJ_ROTATE] = false;
-	actions_done[Action::VIEW_OBJECT] = false;
-	actions_done[Action::OBJ_CONTROL_MODEL] = false;
+	state[Action::BOUNDING_BOX] = false;
+	state[Action::VERTEX_NORMALS] = false;
+	state[Action::WORLD_AXES] = true;
+	state[Action::MOUSE_LOOK] = false;
+	state[Action::FPS_CAMERA] = false;
+	state[Action::OBJ_ROTATE] = false;
+	state[Action::VIEW_OBJECT] = false;
+	state[Action::OBJ_CONTROL_MODEL] = false;
 }
 
 void initKeybindings() {
 	// Bind keyboard
-	keyBind.set()
-
-	// Alphabetical keys bindings
-	keyAlpBind.set(DEFAULT_CAM_LEFT, Action::CAM_LEFT);
-	keyAlpBind.set(DEFAULT_CAM_RIGHT, Action::CAM_RIGHT);
-	keyAlpBind.set(DEFAULT_CAM_FORWARD, Action::CAM_FORWARD);
-	keyAlpBind.set(DEFAULT_CAM_BACKWARD, Action::CAM_BACKWARD);
-	keyAlpBind.set(DEFAULT_MOUSE_LOOK, Action::MOUSE_LOOK);
-	keyAlpBind.set(DEFAULT_CAM_UP, Action::CAM_UP);
-	keyAlpBind.set(DEFAULT_BOUNDING_BOX, Action::BOUNDING_BOX);
-	keyAlpBind.set(DEFAULT_VERTEX_NORMALS, Action::VERTEX_NORMALS);
-	keyAlpBind.set(DEFAULT_WORLD_AXES, Action::WORLD_AXES);
-	keyAlpBind.set(DEFAULT_OBJECT_AXES, Action::OBJECT_AXES);
-	keyAlpBind.set(DEFAULT_OBJ_SCALE_INC, Action::OBJ_SCALE_INC);
-	keyAlpBind.set(DEFAULT_OBJ_SCALE_DEC, Action::OBJ_SCALE_DEC);
-	keyAlpBind.set(DEFAULT_PROJECTION_TOGGLE, Action::PROJECTION_TOGGLE);
-	keyAlpBind.set(DEFAULT_RESET_SCENE, Action::RESET_SCENE);
-	keyAlpBind.set(DEFAULT_FPS_CAMERA, Action::FPS_CAMERA);
-	keyAlpBind.set(DEFAULT_VIEW_OBJECT, Action::VIEW_OBJECT);
-	keyAlpBind.set(DEFAULT_ESCAPE_ALL, Action::ESCAPE_ALL);
-
-	// Special keys bindings
-	keySplBind.set(DEFAULT_OBJ_LEFT, Action::OBJ_LEFT);
-	keySplBind.set(DEFAULT_OBJ_RIGHT, Action::OBJ_RIGHT);
-	keySplBind.set(DEFAULT_OBJ_FORWARD, Action::OBJ_FORWARD);
-	keySplBind.set(DEFAULT_OBJ_BACKWARD, Action::OBJ_BACKWARD);
-	keySplBind.set(DEFAULT_OBJ_UP, Action::OBJ_UP);
-	keySplBind.set(DEFAULT_OBJ_DOWN, Action::OBJ_DOWN);
-
-	// Modifier keys bindings
-	keyModBind.set((ModifierKey)DEFAULT_CAM_DOWN, Action::CAM_DOWN);
-	keyModBind.set((ModifierKey)DEFAULT_OBJ_ALT_MOVE, Action::OBJ_ALT_MOVE);
-	keyModBind.set((ModifierKey)DEFAULT_OBJ_CONTROL_MODEL, Action::OBJ_CONTROL_MODEL);
+	keyboardBind.set(DEFAULT_CAM_LEFT, Action::CAM_LEFT);
+	keyboardBind.set(DEFAULT_CAM_RIGHT, Action::CAM_RIGHT);
+	keyboardBind.set(DEFAULT_CAM_FORWARD, Action::CAM_FORWARD);
+	keyboardBind.set(DEFAULT_CAM_BACKWARD, Action::CAM_BACKWARD);
+	keyboardBind.set(DEFAULT_MOUSE_LOOK, Action::MOUSE_LOOK);
+	keyboardBind.set(DEFAULT_CAM_UP, Action::CAM_UP);
+	keyboardBind.set(DEFAULT_BOUNDING_BOX, Action::BOUNDING_BOX);
+	keyboardBind.set(DEFAULT_VERTEX_NORMALS, Action::VERTEX_NORMALS);
+	keyboardBind.set(DEFAULT_WORLD_AXES, Action::WORLD_AXES);
+	keyboardBind.set(DEFAULT_OBJECT_AXES, Action::OBJECT_AXES);
+	keyboardBind.set(DEFAULT_OBJ_SCALE_INC, Action::OBJ_SCALE_INC);
+	keyboardBind.set(DEFAULT_OBJ_SCALE_DEC, Action::OBJ_SCALE_DEC);
+	keyboardBind.set(DEFAULT_PROJECTION_TOGGLE, Action::PROJECTION_TOGGLE);
+	keyboardBind.set(DEFAULT_RESET_SCENE, Action::RESET_SCENE);
+	keyboardBind.set(DEFAULT_FPS_CAMERA, Action::FPS_CAMERA);
+	keyboardBind.set(DEFAULT_VIEW_OBJECT, Action::VIEW_OBJECT);
+	keyboardBind.set(DEFAULT_ESCAPE_ALL, Action::ESCAPE_ALL);
+	keyboardBind.set(DEFAULT_OBJ_LEFT, Action::OBJ_LEFT);
+	keyboardBind.set(DEFAULT_OBJ_RIGHT, Action::OBJ_RIGHT);
+	keyboardBind.set(DEFAULT_OBJ_FORWARD, Action::OBJ_FORWARD);
+	keyboardBind.set(DEFAULT_OBJ_BACKWARD, Action::OBJ_BACKWARD);
+	keyboardBind.set(DEFAULT_OBJ_UP, Action::OBJ_UP);
+	keyboardBind.set(DEFAULT_OBJ_DOWN, Action::OBJ_DOWN);
+	keyboardBind.set(DEFAULT_CAM_DOWN, Action::CAM_DOWN);
+	keyboardBind.set(DEFAULT_OBJ_ALT_MOVE, Action::OBJ_ALT_MOVE);
+	keyboardBind.set(DEFAULT_OBJ_CONTROL_MODEL, Action::OBJ_CONTROL_MODEL);
 
 	// Mouse button bindings
-	mouseBttnBind.set(DEFAULT_OBJ_ROTATE, Action::OBJ_ROTATE);
+	mouseBind.set(DEFAULT_OBJ_ROTATE, Action::OBJ_ROTATE);
 }
 
 
@@ -698,14 +610,28 @@ void initScene() {
 
 
 //do not change this function unless you really know what you are doing!
-void initGraphics(int argc, char *argv[])
+void initGraphics(int argc, char *argv[], GLFWwindow *&window)
 {
-	// Initialize GLUT
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(START_WIDTH, START_HEIGHT);
-	glutCreateWindow("Model renderer using AntTweakBar and freeGlut");
-	glutCreateMenu(NULL);
+	// Initialize GLFW
+	if (!glfwInit()) {
+		std::cerr << "GLFW initialization failed" << std::endl;
+		exit(1);
+	}
+	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+	assert_m(!monitor, "GLFW get primary monitor failed");
+	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+	assert_m(!mode, "GLFW get video mode failed");
+	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+	window = glfwCreateWindow(
+		/*width*/ START_WIDTH, /*height*/ START_HEIGHT,
+		/*title*/ "Model renderer using AntTweakBar and GLFW",
+		/*monitor*/ NULL, // Windowed Mode
+		/*share*/ NULL // Don't share resources with another window
+	);
+	assert_m(!window, "GLFW create window failed") {
+	glfwMakeContextCurrent(window); // Needed for GLEW (and OpenGL?)
 
 	// Initialize OpenGL
 	glDisable(GL_DEPTH_TEST);
@@ -739,10 +665,10 @@ static inline void drawScene()
 		axes_buffers,
 		pixels,
 		screen,
-		actions_done[Action::BOUNDING_BOX],
-		actions_done[Action::VERTEX_NORMALS],
-		actions_done[Action::WORLD_AXES],
-		actions_done[Action::OBJECT_AXES],
+		state[Action::BOUNDING_BOX],
+		state[Action::VERTEX_NORMALS],
+		state[Action::WORLD_AXES],
+		state[Action::OBJECT_AXES],
 		obj_color,
 		bbox_color,
 		normals_color
@@ -770,13 +696,13 @@ void display()
 //  	std::cout << "C: " << counter << std::endl;
 //  	counter++;
 
-    glClearColor(0, 0, 0, 1); //background color
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0, 0, 0, 1); //background color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//time measuring - don't delete
 	render_timer.start();
 
- 	drawScene();
+	drawScene();
 
 	//time measuring - don't delete
 	render_elapsed_us = static_cast<UINT32>(render_timer.get_elapsed_us());
@@ -791,12 +717,9 @@ void display()
 
 
 // Callback function called by GLUT when window size changes
-void Reshape(int width, int height)
+void window_size_callback(int width, int height)
 {
 	glUseScreenCoordinates(width, height);
-
-	//////////////////////////////////////
-	///////add your reshape code here/////////////
 
 	// Update the screen dimensions
 	screen.x = width;
@@ -815,70 +738,34 @@ void Reshape(int width, int height)
 	camera.aspect_ratio = screen.aspect_ratio();
 	camera.update_projections();
 
-	//////////////////////////////////////
-
-    // Send the new window size to AntTweakBar
-    TwWindowSize(width, height);
-	//glutPostRedisplay();
+	// Send the new window size to AntTweakBar
+	TwWindowSize(width, height);
 }
 
 
 
-void MouseButton(int button, int state, int x, int y)
-{
-	TwEventMouseButtonGLUT(button, state, x, y);
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+	TwEventMouseButtonGLFW3(window, button, action, mods);
 
-	if (state == GLUT_UP) mouseBttnPress.press(button);
-	else if (state == GLUT_DOWN) mouseBttnPress.release(button);
-
-	//// Check if modifiers are pressed (Ctrl, Alt, etc.)
-	//int modifiers = glutGetModifiers();
-	//switch (getDrawMode()) {
-	//case PAIR_HOLD:
-	//	pairHold_MouseButton(modifiers, button, state, x, y);
-	//	break;
-	//case ARRAY_CLICK:
-	//	arrayClick_MouseButton(modifiers, button, state, x, y);
-	//	break;
-	//case ARRAY_HOLD:
-	//	arrayHold_MouseButton(modifiers, button, state, x, y);
-	//	break;
-	//}
-
-	//TwRefreshBar(bar);
-	//glutPostRedisplay();
+	switch (action) {
+	case GLFW_PRESS:
+		mousePress.press(button);
+		break;
+	case GLFW_RELEASE:
+		mousePress.release(button);
+		break;
+	}
 }
 
-void MouseMotion(int x, int y)
-{
-	TwEventMouseMotionGLUT(x, y);
+void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
+	TwEventCursorPosGLFW3(window, xpos, ypos);
 
-	//// Check if modifiers are pressed (Ctrl, Alt, etc.)
-	//int modifiers = glutGetModifiers();
-	//switch (getDrawMode()) {
-	//case PAIR_HOLD:
-	//	pairHold_MouseMotion(modifiers, x, y);
-	//	break;
-	//case ARRAY_CLICK:
-	//	arrayClick_MouseMotion(modifiers, x, y);
-	//	break;
-	//case ARRAY_HOLD:
-	//	arrayHold_MouseMotion(modifiers, x, y);
-	//	break;
-	//}
-
-	mouse.update_pos(x, y);
-
-	//TwRefreshBar(bar);
-	//glutPostRedisplay();
+	mouse.update_pos(xpos, ypos);
 }
 
-void PassiveMouseMotion(int x, int y)
-{
-	//TwEventMouseMotionGLUT(x, y);
-	MouseMotion(x, y);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+	TwEventScrollGLFW3(window, xoffset, yoffset);
 }
-
 
 void KeyboardDown(unsigned char k, int x, int y)
 {
@@ -924,92 +811,92 @@ void SpecialUp(int k, int x, int y)
 
 
 // Function called at exit
-void Terminate(void)
+void terminate(void)
 { 
-    TwTerminate();
+	TwTerminate();
+	glfwTerminate();
 }
 
 // Perform the given action
 void performAction(Action action, bool press) {
 	switch (action) {
 	default:
-		// perror("Unhandled action");
-		// exit(1);
+		assert(0);
 		break;
 	case Action::CAM_LEFT:
-		actions_done[Action::CAM_LEFT] = press;
+		state[Action::CAM_LEFT] = press;
 		break;
 	case Action::CAM_RIGHT:
-		actions_done[Action::CAM_RIGHT] = press;
+		state[Action::CAM_RIGHT] = press;
 		break;
 	case Action::CAM_FORWARD:
-		actions_done[Action::CAM_FORWARD] = press;
+		state[Action::CAM_FORWARD] = press;
 		break;
 	case Action::CAM_BACKWARD:
-		actions_done[Action::CAM_BACKWARD] = press;
+		state[Action::CAM_BACKWARD] = press;
 		break;
 	case Action::CAM_UP:
-		actions_done[Action::CAM_UP] = press;
+		state[Action::CAM_UP] = press;
 		break;
 	case Action::CAM_DOWN:
-		actions_done[Action::CAM_DOWN] = press;
+		state[Action::CAM_DOWN] = press;
 		break;
 	case Action::OBJ_LEFT:
-		actions_done[Action::OBJ_LEFT] = press;
+		state[Action::OBJ_LEFT] = press;
 		break;
 	case Action::OBJ_RIGHT:
-		actions_done[Action::OBJ_RIGHT] = press;
+		state[Action::OBJ_RIGHT] = press;
 		break;
 	case Action::OBJ_FORWARD:
-		actions_done[Action::OBJ_FORWARD] = press;
+		state[Action::OBJ_FORWARD] = press;
 		break;
 	case Action::OBJ_BACKWARD:
-		actions_done[Action::OBJ_BACKWARD] = press;
+		state[Action::OBJ_BACKWARD] = press;
 		break;
 	case Action::OBJ_UP:
-		actions_done[Action::OBJ_UP] = press;
+		state[Action::OBJ_UP] = press;
 		break;
 	case Action::OBJ_DOWN:
-		actions_done[Action::OBJ_DOWN] = press;
+		state[Action::OBJ_DOWN] = press;
 		break;
 	case Action::MOUSE_LOOK:
 		if (press) {
-			if (!actions_done[Action::MOUSE_LOOK]) { // Switch to mouse look mode
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Make the cursor invisible
+			if (!state[Action::MOUSE_LOOK]) { // Switch to mouse look mode
+				mouse.disable(); // Make the cursor invisible
 			}
 			else { // Switch to normal cursor mode
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // Make the cursor visible
+				mouse.normal(); // Make the cursor visible
 			}
 			mouse.update_rest(screen.mid_point());
-			actions_done[Action::MOUSE_LOOK].toggle();
-			actions_done[Action::OBJ_ROTATE] = false;
-			actions_done[Action::FPS_CAMERA] = false;
-			//actions_done[Action::VIEW_OBJECT] = false;
+			state[Action::MOUSE_LOOK].toggle();
+			state[Action::OBJ_ROTATE] = false;
+			state[Action::FPS_CAMERA] = false;
+			//state[Action::VIEW_OBJECT] = false;
 		}
 		break;
 	case Action::BOUNDING_BOX:
-		if (press) actions_done[Action::BOUNDING_BOX].toggle();
+		if (press) state[Action::BOUNDING_BOX].toggle();
 		break;
 	case Action::VERTEX_NORMALS:
-		if (press) actions_done[Action::VERTEX_NORMALS].toggle();
+		if (press) state[Action::VERTEX_NORMALS].toggle();
 		break;
 	case Action::WORLD_AXES:
-		if (press) actions_done[Action::WORLD_AXES].toggle();
+		if (press) state[Action::WORLD_AXES].toggle();
 		break;
 	case Action::OBJECT_AXES:
-		if (press) actions_done[Action::OBJECT_AXES].toggle();
+		if (press) state[Action::OBJECT_AXES].toggle();
 		break;
 	case Action::OBJ_SCALE_INC:
-		actions_done[Action::OBJ_SCALE_INC] = press;
+		state[Action::OBJ_SCALE_INC] = press;
 		break;
 	case Action::OBJ_SCALE_DEC:
-		actions_done[Action::OBJ_SCALE_DEC] = press;
+		state[Action::OBJ_SCALE_DEC] = press;
 		break;
 	case Action::OBJ_ROTATE:
-		glutSetCursor(GLUT_CURSOR_INHERIT); // Make the cursor visible
-		actions_done[Action::MOUSE_LOOK] = false;
-		actions_done[Action::OBJ_ROTATE].toggle();
-		actions_done[Action::FPS_CAMERA] = false;
+		// mouse.normal(); // Make the cursor visible
+		state[Action::MOUSE_LOOK] = false;
+		state[Action::OBJ_ROTATE].toggle();
+		state[Action::FPS_CAMERA] = false;
 		break;
 	case Action::PROJECTION_TOGGLE:
 		if (press) camera.toggle();
@@ -1019,58 +906,37 @@ void performAction(Action action, bool press) {
 		break;
 	case Action::FPS_CAMERA:
 		if (press) {
-			if (!actions_done[Action::FPS_CAMERA]) { // Switch to mouse look mode
-				glutSetCursor(GLUT_CURSOR_NONE); // Make the cursor invisible
+			if (!state[Action::FPS_CAMERA]) { // Switch to mouse look mode
+				mouse.disable(); // Make the cursor invisible
 				mouse.reset();
 			}
 			else { // Switch to normal cursor mode
-				glutSetCursor(GLUT_CURSOR_INHERIT); // Make the cursor visible
+				mouse.normal(); // Make the cursor visible
 			}
 			mouse.update_rest(screen.mid_point());
-			actions_done[Action::MOUSE_LOOK] = false;
-			actions_done[Action::OBJ_ROTATE] = false;
-			actions_done[Action::FPS_CAMERA].toggle();
-			//actions_done[Action::VIEW_OBJECT] = false;
+			state[Action::MOUSE_LOOK] = false;
+			state[Action::OBJ_ROTATE] = false;
+			state[Action::FPS_CAMERA].toggle();
+			//state[Action::VIEW_OBJECT] = false;
 		}
 		break;
 	case Action::VIEW_OBJECT:
-		if (press) actions_done[Action::VIEW_OBJECT].toggle();
+		if (press) state[Action::VIEW_OBJECT].toggle();
 		break;
 	case Action::OBJ_ALT_MOVE:
-		actions_done[Action::OBJ_ALT_MOVE] = press;
+		state[Action::OBJ_ALT_MOVE] = press;
 		break;
 	case Action::ESCAPE_ALL:
 		if (press) {
-			glutSetCursor(GLUT_CURSOR_INHERIT); // Make the cursor visible
-			actions_done[Action::MOUSE_LOOK] = false;
-			actions_done[Action::FPS_CAMERA] = false;
-			actions_done[Action::OBJ_ROTATE] = false;
-			actions_done[Action::VIEW_OBJECT] = false;
+			mouse.normal(); // Make the cursor visible
+			state[Action::MOUSE_LOOK] = false;
+			state[Action::FPS_CAMERA] = false;
+			state[Action::OBJ_ROTATE] = false;
+			state[Action::VIEW_OBJECT] = false;
 		}
 		break;
 	case Action::OBJ_CONTROL_MODEL:
-		actions_done[Action::OBJ_CONTROL_MODEL] = press;
-	}
-}
-
-void updateModifiers(KeyModPress &map) {
-	if (GetKeyState(VK_SHIFT) & 0x8000) {
-		map.press(ModifierKey::SHIFT);
-	}
-	else {
-		map.release(ModifierKey::SHIFT);
-	}
-	if (GetKeyState(VK_CONTROL) & 0x8000) {
-		map.press(ModifierKey::CTRL);
-	}
-	else {
-		map.release(ModifierKey::CTRL);
-	}
-	if (GetKeyState(VK_MENU) & 0x8000) {
-		map.press(ModifierKey::ALT);
-	}
-	else {
-		map.release(ModifierKey::ALT);
+		state[Action::OBJ_CONTROL_MODEL] = press;
 	}
 }
 
@@ -1079,68 +945,41 @@ void update_motion(Motion &motion,
 	Action forward, Action backward,
 	Action up, Action down
 ) {
-	if (actions_done[left]) motion.go_left();
+	if (state[left]) motion.go_left();
 	else motion.stop_left();
-	if (actions_done[right]) motion.go_right();
+	if (state[right]) motion.go_right();
 	else motion.stop_right();
-	if (actions_done[forward]) motion.go_forward();
+	if (state[forward]) motion.go_forward();
 	else motion.stop_forward();
-	if (actions_done[backward]) motion.go_backward();
+	if (state[backward]) motion.go_backward();
 	else motion.stop_backward();
-	if (actions_done[up]) motion.go_up();
+	if (state[up]) motion.go_up();
 	else motion.stop_up();
-	if (actions_done[down]) motion.go_down();
+	if (state[down]) motion.go_down();
 	else motion.stop_down();
 }
 
-void Timer(int value) {
+void control_loop(int value) {
 	// Measure the time it takes to do the main control loop
 	control_timer.start();
 
 	if (frame_number == (unsigned int)value) { // No frame was rendered at that time frame
-		glutTimerFunc(time_frame_ms, Timer, value); // Register the timer callback again -- with the same frame number
+		glutTimerFunc(time_frame_ms, control_loop, value); // Register the timer callback again -- with the same frame number
 		return;
 	}
 
-	// Update the modifier keys map
-	updateModifiers(keyModPress);
-
 	// Check keys and perform actions
-	while (keyAlpPress.hasNext()) {
-		KeyAlpPress::KeyAndPress next = keyAlpPress.next();
-		unsigned char k = next.key;
-		bool press = next.press;
-		performAction(keyAlpBind.atKey(k), press);
-	}
-	while (keySplPress.hasNext()) {
-		KeySplPress::KeyAndPress next = keySplPress.next();
+	while (keyboardPress.hasNext()) {
+		KeyboardPress::KeyAndPress next = keyboardPress.next();
 		int k = next.key;
 		bool press = next.press;
-		performAction(keySplBind.atKey(k), press);
+		performAction(keyboardBind.atKey(k), press);
 	}
-	while (mouseBttnPress.hasNext()) {
-		MouseBttnPress::KeyAndPress next = mouseBttnPress.next();
+	while (mousePress.hasNext()) {
+		MousePress::KeyAndPress next = mousePress.next();
 		int k = next.key;
 		bool press = next.press;
-		performAction(mouseBttnBind.atKey(k), press);
-	}
-	if (keyModPress.press_edge(ModifierKey::SHIFT)) {
-		performAction(keyModBind.atKey(ModifierKey::SHIFT), true);
-	}
-	if (keyModPress.release_edge(ModifierKey::SHIFT)) {
-		performAction(keyModBind.atKey(ModifierKey::SHIFT), false);
-	}
-	if (keyModPress.press_edge(ModifierKey::CTRL)) {
-		performAction(keyModBind.atKey(ModifierKey::CTRL), true);
-	}
-	if (keyModPress.release_edge(ModifierKey::CTRL)) {
-		performAction(keyModBind.atKey(ModifierKey::CTRL), false);
-	}
-	if (keyModPress.press_edge(ModifierKey::ALT)) {
-		performAction(keyModBind.atKey(ModifierKey::ALT), true);
-	}
-	if (keyModPress.release_edge(ModifierKey::ALT)) {
-		performAction(keyModBind.atKey(ModifierKey::ALT), false);
+		performAction(mouseBind.atKey(k), press);
 	}
 
 	// Update the camera motion
@@ -1158,9 +997,9 @@ void Timer(int value) {
 	);
 
 	// Increase/Decrease the object scale
-	if (actions_done[Action::OBJ_SCALE_INC]) obj_scale_motion.go_right();
+	if (state[Action::OBJ_SCALE_INC]) obj_scale_motion.go_right();
 	else obj_scale_motion.stop_right();
-	if (actions_done[Action::OBJ_SCALE_DEC]) obj_scale_motion.go_left();
+	if (state[Action::OBJ_SCALE_DEC]) obj_scale_motion.go_left();
 	else obj_scale_motion.stop_left();
 
 	// Calculate the move vectors
@@ -1170,7 +1009,7 @@ void Timer(int value) {
 
 	// Update the object scale
 	Matrix4 obj_scale = Matrix4::iso_scaling(1.0 + obj_scale_vector[0]);
-	//if (actions_done[Action::OBJ_CONTROL_MODEL]) {
+	//if (state[Action::OBJ_CONTROL_MODEL]) {
 	//	object.model = object.model * obj_scale;
 	//}
 	//else {
@@ -1186,22 +1025,22 @@ void Timer(int value) {
 	Matrix4 rotUW = Matrix4::rotation(camera.v ^ camera.w, camera.v, camera.w);
 
 	// Calculate the camera current rotation
-	if (actions_done[Action::MOUSE_LOOK] || actions_done[Action::FPS_CAMERA]) {
+	if (state[Action::MOUSE_LOOK] || state[Action::FPS_CAMERA]) {
 		camera.w = rotY * camera.w;
 		camera.update_u_angle(-u_angle);
 
-		if (actions_done[Action::FPS_CAMERA]) { // FPS view
+		if (state[Action::FPS_CAMERA]) { // FPS view
 			camera.update_fps_rot();
 		}
-		else if (actions_done[Action::MOUSE_LOOK]) { // Free view
+		else if (state[Action::MOUSE_LOOK]) { // Free view
 			camera.rot = camera.rot * rotY * rotX;
 		}
 
 		// Reset the mouse position to the middle of the screen
 		glutWarpPointer(screen.mid_x_int(), screen.mid_y_int()); // Set the cursor to the middle of the screen
 	}
-	else if (actions_done[Action::OBJ_ROTATE]) {
-		if (actions_done[Action::OBJ_CONTROL_MODEL]) {
+	else if (state[Action::OBJ_ROTATE]) {
+		if (state[Action::OBJ_CONTROL_MODEL]) {
 			object.model = object.model * Matrix4::transpose(rot);
 		}
 		else {
@@ -1210,12 +1049,12 @@ void Timer(int value) {
 		object.rot = rot * object.rot;
 	}
 	// Update the mouse rest position
-	if (!actions_done[Action::MOUSE_LOOK] && !actions_done[Action::FPS_CAMERA]) mouse.update_rest(mouse.curr);
+	if (!state[Action::MOUSE_LOOK] && !state[Action::FPS_CAMERA]) mouse.update_rest(mouse.curr);
 	mouse.reset();
 
 	// Calculate the translation matrix
 	Matrix4 cam_translate;
-	if (actions_done[Action::FPS_CAMERA]) {
+	if (state[Action::FPS_CAMERA]) {
 		cam_translate = Matrix4::translation(rotUW * cam_move);
 	}
 	else {
@@ -1225,13 +1064,13 @@ void Timer(int value) {
 
 	// Update the object position
 	Matrix4 obj_translate;
-	if (!actions_done[Action::OBJ_ALT_MOVE]) {
+	if (!state[Action::OBJ_ALT_MOVE]) {
 		obj_translate = Matrix4::translation(rotUW * obj_move);
 	}
 	else {
 		obj_translate = Matrix4::translation(obj_move);
 	}
-	if (actions_done[Action::OBJ_CONTROL_MODEL]) {
+	if (state[Action::OBJ_CONTROL_MODEL]) {
 		object.model_pos = obj_translate * object.model_pos;
 		object.model = obj_translate * object.model;
 	}
@@ -1241,7 +1080,7 @@ void Timer(int value) {
 	}
 
 	// If "view object" is pressed, look at the object
-	if (actions_done[Action::VIEW_OBJECT]) camera.look_at(object.world * object.model_pos);
+	if (state[Action::VIEW_OBJECT]) camera.look_at(object.world * object.model_pos);
 
 	// Update the camera inverse view transformation
 	camera.update_inv_view();
@@ -1259,7 +1098,7 @@ void Timer(int value) {
 	// End the control time measure
 	control_elapsed_us = static_cast<UINT32>(control_timer.get_elapsed_us());
 
-	glutTimerFunc(time_frame_ms, Timer, frame_number); // Register the timer callback again
+	glutTimerFunc(time_frame_ms, control_loop, frame_number); // Register the timer callback again
 	TwRefreshBar(bar);
 	glutPostRedisplay();
 }
@@ -1268,8 +1107,7 @@ void setLightMode(int light_num, LightingEnum &light_mode, const LightingEnum &n
 	if (light_mode == new_light_mode) return;
 	switch (light_mode) {
 	default:
-		// perror("Unhandled lighting mode");
-		// exit(1);
+		assert(0);
 		break;
 	case LIGHT_POINT:
 	{
