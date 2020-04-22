@@ -128,7 +128,7 @@ static void draw_w_sw(Line &line, const Color &color, ScreenPixels &pixels) {
 	PIXELS_PUSH_BACK(pixel);
 }
 
-Line initStepLine(Point p1, Point p2, Color color, ScreenPixels &pixels) {
+Line initStepLine(PointI p1, PointI p2, Color color, ScreenPixels &pixels) {
 	Line line;
 
 	int &dx = line.dx;
@@ -228,7 +228,7 @@ Vector4 center_of_vertices(const Vertices &vertices) {
 //
 //	Poly sorted_poly = sortPoly(poly_data.poly);
 //
-//	//Point p3;
+//	//PointI p3;
 //	//p3.x = round(sorted_poly[0].x + ((double)(sorted_poly[1].y - sorted_poly[0].y) / (double)(sorted_poly[2].y - sorted_poly[0].y)) * (sorted_poly[2].x - sorted_poly[0].x));
 //	//p3.y = sorted_poly[1].y;
 //	//Poly upper_poly = { sorted_poly[0], sorted_poly[1], p3 };
@@ -310,7 +310,7 @@ Vector4 center_of_vertices(const Vertices &vertices) {
 //	}
 //}
 
-void calcBoundRect(const PolyData &poly_data, std::array<Point, 2> &bound_rect) {
+void calcBoundRect(const PolyData &poly_data, std::array<PointI, 2> &bound_rect) {
 	for (short i = 0; i < 3; ++i) {
 		if (poly_data.poly[i].x < bound_rect[0].x) {
 			bound_rect[0].x = poly_data.poly[i].x;
@@ -365,13 +365,13 @@ void calcFlatPolygon(const PolyData &poly_data, const Lighting &lighting, const 
 	//test_color(color);
 
 	// Calculate the bounding rectangle of the polygon
-	std::array<Point, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
+	std::array<PointI, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
 	calcBoundRect(poly_data, bound_rect);
 
 	// Calculate each pixel in the polygon
 	for (int y = bound_rect[0].y; y < bound_rect[1].y; ++y) {
 		for (int x = bound_rect[0].x; x < bound_rect[1].x; ++x) {
-			Point p = { x, y };
+			PointI p = { x, y };
 			Bary bary(p, poly_data.poly);
 			if (bary.isInside()) {
 				double depth = bary(poly_data.zbuff); // Interpolate the depth value from each vertex
@@ -390,13 +390,13 @@ void calcGouraudPolygon(const PolyData &poly_data, const Lighting &lighting, con
 	}
 
 	// Calculate the bounding rectangle of the polygon
-	std::array<Point, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
+	std::array<PointI, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
 	calcBoundRect(poly_data, bound_rect);
 
 	// Calculate each pixel in the polygon
 	for (int y = bound_rect[0].y; y < bound_rect[1].y; ++y) {
 		for (int x = bound_rect[0].x; x < bound_rect[1].x; ++x) {
-			Point p = { x, y };
+			PointI p = { x, y };
 			Bary bary(p, poly_data.poly);
 			if (bary.isInside()) {
 				double depth = bary(poly_data.zbuff); // Interpolate the depth value from each vertex
@@ -410,13 +410,13 @@ void calcGouraudPolygon(const PolyData &poly_data, const Lighting &lighting, con
 
 void calcPhongPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
 	// Calculate the bounding rectangle of the polygon
-	std::array<Point, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
+	std::array<PointI, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
 	calcBoundRect(poly_data, bound_rect);
 
 	// Calculate each pixel in the polygon
 	for (int y = bound_rect[0].y; y < bound_rect[1].y; ++y) {
 		for (int x = bound_rect[0].x; x < bound_rect[1].x; ++x) {
-			Point p = { x, y };
+			PointI p = { x, y };
 			Bary bary(p, poly_data.poly);
 			if (bary.isInside()) {
 				double depth = bary(poly_data.zbuff); // Interpolate the depth value from each vertex

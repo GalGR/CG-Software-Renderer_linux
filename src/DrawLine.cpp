@@ -10,7 +10,7 @@ static int dy;
 static int dx2;
 static int dy2;
 
-static void draw_e_ne(const Point &p1, const Point &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
+static void draw_e_ne(const PointI &p1, const PointI &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
 	int d = -dx + dy2;
 	int a = dy2;
 	int b = -dx2 + dy2;
@@ -29,7 +29,7 @@ static void draw_e_ne(const Point &p1, const Point &p2, const Color &color, Scre
 	}
 }
 
-static void draw_n_ne(const Point &p1, const Point &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
+static void draw_n_ne(const PointI &p1, const PointI &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
 	int d = -dx2 + dy;
 	int a = -dx2;
 	int b = -dx2 + dy2;
@@ -48,7 +48,7 @@ static void draw_n_ne(const Point &p1, const Point &p2, const Color &color, Scre
 	}
 }
 
-static void draw_e_se(const Point &p1, const Point &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
+static void draw_e_se(const PointI &p1, const PointI &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
 	int d = dx + dy2;
 	int a = dy2;
 	int b = dx2 + dy2;
@@ -67,7 +67,7 @@ static void draw_e_se(const Point &p1, const Point &p2, const Color &color, Scre
 	}
 }
 
-static void draw_s_se(const Point &p1, const Point &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
+static void draw_s_se(const PointI &p1, const PointI &p2, const Color &color, ScreenPixels &pixels, double depth = NAN) {
 	int d = dx2 + dy;
 	int a = dx2;
 	int b = dx2 + dy2;
@@ -86,7 +86,7 @@ static void draw_s_se(const Point &p1, const Point &p2, const Color &color, Scre
 	}
 }
 
-void calcLine(Point p1, Point p2, Color color, ScreenPixels &pixels, double depth) {
+void calcLine(PointI p1, PointI p2, Color color, ScreenPixels &pixels, double depth) {
 	// If the first point is after the second point swap between them
 	if (p1.x > p2.x) {
 		std::swap(p1, p2);
@@ -113,7 +113,7 @@ void calcLine(Point p1, Point p2, Color color, ScreenPixels &pixels, double dept
 	}
 }
 
-void drawLine(Point p1, Point p2, Color color, ScreenPixels &pixels, std::vector<Pixel> &list_pixels, double depth)
+void drawLine(PointI p1, PointI p2, Color color, ScreenPixels &pixels, std::vector<Pixel> &list_pixels, double depth)
 {
 	Renderer renderer;
 	

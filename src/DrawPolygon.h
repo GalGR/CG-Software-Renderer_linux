@@ -6,7 +6,7 @@
 #include "Light.h"
 #include "Barycentric.h"
 
-typedef std::array<Point, 3> Poly;
+typedef std::array<PointI, 3> Poly;
 typedef std::array<Vector4, 3> Vertices;
 typedef std::array<Vector4, 3> Norms;
 typedef std::array<double, 3> PolyZBuff;

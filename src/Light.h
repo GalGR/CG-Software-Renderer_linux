@@ -19,7 +19,7 @@ struct Light {
 		Color mean_color = 0;
 		for (size_t i = 0; i < numLights; ++i) {
 			Color light_color = lights_arr[i].calc(material, normal, pos, cam_pos);
-			light_color.rgba.a = 0xff;
+			light_color.a = 0xff;
 			for (short j = 0; j < 3; ++j) {
 				//mean_color[j] += (UINT8)((size_t)light_color[j] / numLights);
 				mean_color[j] = (UINT8)(std::round(std::min(255.0, (double)mean_color[j] + (double)light_color[j])));

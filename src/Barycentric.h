@@ -13,7 +13,7 @@ private:
 	template <typename T>
 	static inline int INT_ROUND(T x) { return (int)ROUND(x); }
 
-	static double triangle_area_2(const std::array<Point, 3> &poly) {
+	static double triangle_area_2(const std::array<PointI, 3> &poly) {
 		Vector4 v01 = { (double)poly[1].x - poly[0].x, (double)poly[1].y - poly[0].y };
 		Vector4 v02 = { (double)poly[2].x - poly[0].x, (double)poly[2].y - poly[0].y };
 		return (v01 ^ v02).euclid_length();
@@ -28,7 +28,7 @@ private:
 
 public:
 	Bary() = default;
-	Bary(const Point &p, const std::array<Point, 3> &poly) {
+	Bary(const PointI &p, const std::array<PointI, 3> &poly) {
 		double b0 = (poly[1].y - poly[2].y) * p.x + (poly[2].x - poly[1].x) * p.y + (poly[1].x * poly[2].y - poly[1].y * poly[2].x);
 		double b1 = (poly[2].y - poly[0].y) * p.x + (poly[0].x - poly[2].x) * p.y + (poly[2].x * poly[0].y - poly[2].y * poly[0].x);
 		double b2 = (poly[0].y - poly[1].y) * p.x + (poly[1].x - poly[0].x) * p.y + (poly[0].x * poly[1].y - poly[0].y * poly[1].x);
@@ -59,8 +59,8 @@ public:
 		}
 		return mean;
 	}
-	Point operator ()(const std::array<Point, 3> &points) {
-		Point mean = { 0, 0 };
+	PointI operator ()(const std::array<PointI, 3> &points) {
+		PointI mean = { 0, 0 };
 		for (int i = 0; i < 3; ++i) {
 			mean.x += INT_ROUND(points[i].x * bary_[i]);
 			mean.y += INT_ROUND(points[i].y * bary_[i]);
@@ -95,10 +95,10 @@ public:
 			z * bary_[0] + z * bary_[1] + z * bary_[2]
 		};
 	}
-	Point operator ()(const Point &point) const {
+	PointI operator ()(const PointI &point) const {
 		int x = point.x;
 		int y = point.y;
-		return Point{
+		return PointI{
 			INT_ROUND(x * bary_[0] + x * bary_[1] + x * bary_[2]),
 			INT_ROUND(y * bary_[0] + y * bary_[1] + y * bary_[2])
 		};

@@ -17,7 +17,7 @@ typedef enum { SHADING_WIRE, SHADING_FLAT, SHADING_GOURAUD, SHADING_PHONG, SHADI
 struct DrawBuffers {
 	typedef std::vector<bool> NeedDraw;
 	typedef std::vector<Vector4> Points3D;
-	typedef std::vector<Point> Points2D;
+	typedef std::vector<PointI> Points2D;
 
 	NeedDraw need_draw;
 	Points3D points_3d;
@@ -58,7 +58,7 @@ public:
 	//	const Matrix4 &proj,
 	//	std::vector<bool> &need_draw,
 	//	std::vector<Vector4> &points_3d,
-	//	std::vector<Point> &points_2d,
+	//	std::vector<PointI> &points_2d,
 	//	std::vector<Pixel> &pixels,
 	//	double screen_width,
 	//	double screen_height,

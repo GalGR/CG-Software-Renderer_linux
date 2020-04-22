@@ -1,7 +1,7 @@
 #include "DrawPolygon.h"
 
 Vector4 center_of_vertices(const Vertices &vertices);
-void calcBoundRect(const PolyData &poly_data, std::array<Point, 2> &bound_rect);
+void calcBoundRect(const PolyData &poly_data, std::array<PointI, 2> &bound_rect);
 
 extern int iteration;
 void test_color(Color &color) {
@@ -40,13 +40,13 @@ void calcFlatPolygonTest(const PolyData &poly_data, const Lighting &lighting, co
 	test_color(color);
 
 	// Calculate the bounding rectangle of the polygon
-	std::array<Point, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
+	std::array<PointI, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
 	calcBoundRect(poly_data, bound_rect);
 
 	// Calculate each pixel in the polygon
 	for (int y = bound_rect[0].y; y < bound_rect[1].y; ++y) {
 		for (int x = bound_rect[0].x; x < bound_rect[1].x; ++x) {
-			Point p = { x, y };
+			PointI p = { x, y };
 			Bary bary(p, poly_data.poly);
 			if (bary.isInside()) {
 				double depth = bary(poly_data.zbuff); // Interpolate the depth value from each vertex
@@ -68,13 +68,13 @@ void calcGouraudPolygonTest(const PolyData &poly_data, const Lighting &lighting,
 	iteration = prev_iteration;
 
 	// Calculate the bounding rectangle of the polygon
-	std::array<Point, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
+	std::array<PointI, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
 	calcBoundRect(poly_data, bound_rect);
 
 	// Calculate each pixel in the polygon
 	for (int y = bound_rect[0].y; y < bound_rect[1].y; ++y) {
 		for (int x = bound_rect[0].x; x < bound_rect[1].x; ++x) {
-			Point p = { x, y };
+			PointI p = { x, y };
 			Bary bary(p, poly_data.poly);
 			if (bary.isInside()) {
 				double depth = bary(poly_data.zbuff); // Interpolate the depth value from each vertex

@@ -23,8 +23,8 @@ static inline bool clip(const V &v) {
 }
 
 template <typename V>
-static inline Point to_screen_coords(const V &v, const MyScreen &screen) {
-	return Point{
+static inline PointI to_screen_coords(const V &v, const MyScreen &screen) {
+	return PointI{
 		INT_ROUND((v[0] + 1) * (double)(screen.x) / 2.0),
 		INT_ROUND((v[1] + 1) * (double)(screen.y) / 2.0)
 	};
@@ -38,7 +38,7 @@ static inline std::array<double, 2> to_screen_coords_double(const V &v, const My
 	};
 }
 
-static inline Vector4 to_view_coords(const Point &p, const MyScreen &screen) {
+static inline Vector4 to_view_coords(const PointI &p, const MyScreen &screen) {
 	return Vector4{
 		((double)p.x * 2.0 / (double)(screen.x)) - 1.0,
 		((double)p.y * 2.0 / (double)(screen.y)) - 1.0
@@ -86,7 +86,7 @@ void Draw::calcProjection(
 //	const Matrix4 &proj,
 //	std::vector<bool> &need_draw,
 //	std::vector<Vector4> &points_3d,
-//	std::vector<Point> &points_2d,
+//	std::vector<PointI> &points_2d,
 //	std::vector<Pixel> &pixels,
 //	double screen_width,
 //	double screen_height,

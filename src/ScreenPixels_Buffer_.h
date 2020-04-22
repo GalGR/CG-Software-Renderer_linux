@@ -54,7 +54,7 @@ private:
 		assert(y < height_);
 		depth_[y * width_ + x] = depth;
 	}
-	void setDepth(Point p, double depth) { setDepth(p.x, p.y, depth); }
+	void setDepth(PointI p, double depth) { setDepth(p.x, p.y, depth); }
 	double getDepth(size_t i) const {
 		assert(i < width_ * height_);
 		return depth_[i];
@@ -69,7 +69,7 @@ private:
 		assert(y < height_);
 		occupied_[y * width_ + x] = val;
 	}
-	void setIsPixel(Point p, bool val) { setIsPixel(p.x, p.y, val); }
+	void setIsPixel(PointI p, bool val) { setIsPixel(p.x, p.y, val); }
 	bool getIsPixel(size_t i) const {
 		assert(i < width_ * height_);
 		return occupied_[i];
@@ -81,13 +81,13 @@ public:
 		assert(y < height_);
 		return occupied_[y * width_ + x];
 	}
-	bool getIsPixel(Point p) const { return getIsPixel(p.x, p.y); }
+	bool getIsPixel(PointI p) const { return getIsPixel(p.x, p.y); }
 	double getDepth(size_t x, size_t y) const {
 		assert(x < width_);
 		assert(y < height_);
 		return depth_[y * width_ + x];
 	}
-	double getDepth(Point p) const { return getDepth(p.x, p.y); }
+	double getDepth(PointI p) const { return getDepth(p.x, p.y); }
 
 	Color getPixel(size_t x, size_t y) const {
 		return (*this)(x, y);
