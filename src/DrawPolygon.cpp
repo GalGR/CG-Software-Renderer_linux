@@ -207,10 +207,9 @@ void calcStepLine(Line &line, Color color, ScreenPixels &pixels) {
 	}
 }
 
-Vector4 center_of_vertices(const Vertices &vertices) {
-	Vector4 center = { 0.0, 0.0, 0.0 };
+Vector3 center_of_vertices(const Vertices &vertices) {
+	Vector3 center = { 0.0, 0.0, 0.0 };
 	for (short i = 0; i < 3; ++i) {
-		assert(vertices[i][3] == 1.0);
 		for (short j = 0; j < 3; ++j) {
 			center[j] += vertices[i][j] / 3.0;
 		}
@@ -218,10 +217,10 @@ Vector4 center_of_vertices(const Vertices &vertices) {
 	return center;
 }
 
-//void calcFlatPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
+//void calcFlatPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector3 &face_normal, const Vector3 &cam_pos, ScreenPixels &pixels) {
 //
 //	// Calculate the center of mass (flat shading)
-//	Vector4 center = center_of_vertices(poly_data.vertices);
+//	Vector3 center = center_of_vertices(poly_data.vertices);
 //
 //	// Calculate the color (flat shading)
 //	Color color = Light::calc(lighting, material, face_normal, center, cam_pos);
@@ -354,10 +353,10 @@ void calcBoundRect(const PolyData &poly_data, std::array<PointI, 2> &bound_rect)
 //	}
 //}
 
-void calcFlatPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
+void calcFlatPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector3 &face_normal, const Vector3 &cam_pos, ScreenPixels &pixels) {
 
 	// Calculate the center of mass (flat shading)
-	Vector4 center = center_of_vertices(poly_data.vertices);
+	Vector3 center = center_of_vertices(poly_data.vertices);
 
 	// Calculate the color (flat shading)
 	Color color = Light::calc(lighting, material, face_normal, center, cam_pos);
@@ -382,7 +381,7 @@ void calcFlatPolygon(const PolyData &poly_data, const Lighting &lighting, const 
 	}
 }
 
-void calcGouraudPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
+void calcGouraudPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector3 &face_normal, const Vector3 &cam_pos, ScreenPixels &pixels) {
 	// Calculate the color for each vertex (Gouraud shading)
 	std::array<Color, 3> colors;
 	for (short i = 0; i < 3; ++i) {
@@ -408,7 +407,7 @@ void calcGouraudPolygon(const PolyData &poly_data, const Lighting &lighting, con
 	}
 }
 
-void calcPhongPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
+void calcPhongPolygon(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector3 &face_normal, const Vector3 &cam_pos, ScreenPixels &pixels) {
 	// Calculate the bounding rectangle of the polygon
 	std::array<PointI, 2> bound_rect = { poly_data.poly[0], poly_data.poly[0] };
 	calcBoundRect(poly_data, bound_rect);
@@ -420,8 +419,8 @@ void calcPhongPolygon(const PolyData &poly_data, const Lighting &lighting, const
 			Bary bary(p, poly_data.poly);
 			if (bary.isInside()) {
 				double depth = bary(poly_data.zbuff); // Interpolate the depth value from each vertex
-				Vector4 normal = bary(poly_data.norms); // Interpolate the normal from each vertex
-				Vector4 pos = bary(poly_data.vertices); // Interpolate the position from each vertex
+				Vector3 normal = bary(poly_data.norms); // Interpolate the normal from each vertex
+				Vector3 pos = bary(poly_data.vertices); // Interpolate the position from each vertex
 				Color color = Light::calc(lighting, material, normal, pos, cam_pos);
 				Pixel pixel = { p, color };
 				pixels.push_back(pixel, depth);
