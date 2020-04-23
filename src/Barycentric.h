@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector4.h"
+#include "Vector3.h"
 #include "Point.h"
 #include <array>
 
@@ -14,9 +15,9 @@ private:
 	static inline int INT_ROUND(T x) { return (int)ROUND(x); }
 
 	static double triangle_area_2(const std::array<PointI, 3> &poly) {
-		Vector4 v01 = { (double)poly[1].x - poly[0].x, (double)poly[1].y - poly[0].y };
-		Vector4 v02 = { (double)poly[2].x - poly[0].x, (double)poly[2].y - poly[0].y };
-		return (v01 ^ v02).euclid_length();
+		Vector3 v01 = { (double)poly[1].x - poly[0].x, (double)poly[1].y - poly[0].y };
+		Vector3 v02 = { (double)poly[2].x - poly[0].x, (double)poly[2].y - poly[0].y };
+		return (v01 ^ v02).length();
 	}
 
 	bool isPositive() const {
@@ -50,8 +51,17 @@ public:
 		return isPositive()/* || isNegative()*/;
 	}
 
-	Vector4 operator ()(const std::array<Vector4, 3> &vecs) {
-		Vector4 mean;
+	Vector3 operator ()(const std::array<Vector4, 3> &vecs) {
+		Vector3 mean;
+		for (int i = 0; i < 3; ++i) {
+			for (int j = 0; j < 3; ++j) {
+				mean[j] += vecs[i](j) * bary_[i];
+			}
+		}
+		return mean;
+	}
+	Vector3 operator ()(const std::array<Vector3, 3> &vecs) {
+		Vector3 mean;
 		for (int i = 0; i < 3; ++i) {
 			for (int j = 0; j < 3; ++j) {
 				mean[j] += vecs[i](j) * bary_[i];
@@ -84,15 +94,11 @@ public:
 		return mean;
 	}
 
-	Vector4 operator ()(const Vector4 &vec) const {
-		Vector4 vec_euclid = Vector4::euclid(vec);
-		double x = vec_euclid[0];
-		double y = vec_euclid[1];
-		double z = vec_euclid[2];
-		return Vector4{
-			x * bary_[0] + x * bary_[1] + x * bary_[2],
-			y * bary_[0] + y * bary_[1] + y * bary_[2],
-			z * bary_[0] + z * bary_[1] + z * bary_[2]
+	Vector3 operator ()(const Vector3 &vec) const {
+		return Vector3{
+			vec.x * bary_[0] + vec.x * bary_[1] + vec.x * bary_[2],
+			vec.y * bary_[0] + vec.y * bary_[1] + vec.y * bary_[2],
+			vec.z * bary_[0] + vec.z * bary_[1] + vec.z * bary_[2]
 		};
 	}
 	PointI operator ()(const PointI &point) const {

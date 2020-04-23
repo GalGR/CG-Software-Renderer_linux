@@ -308,11 +308,6 @@ int main(int argc, char *argv[])
 	initCallbacks();
 	glutDisplayFunc(display);
 
-
-	glutKeyboardUpFunc(KeyboardUp);
-	glutSpecialFunc(SpecialDown);
-	glutSpecialUpFunc(SpecialUp);
-
 	glutTimerFunc(time_frame_ms, control_loop, frame_number); // Timer callback function
 
 	// Teminates AntTweakBar and GLFW on program exit
@@ -630,7 +625,7 @@ void initGraphics(int argc, char *argv[], GLFWwindow *&window)
 		/*monitor*/ NULL, // Windowed Mode
 		/*share*/ NULL // Don't share resources with another window
 	);
-	assert_m(!window, "GLFW create window failed") {
+	assert_m(!window, "GLFW create window failed");
 	glfwMakeContextCurrent(window); // Needed for GLEW (and OpenGL?)
 
 	// Initialize OpenGL

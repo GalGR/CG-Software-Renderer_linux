@@ -56,20 +56,12 @@ void Draw::calcProjection(
 	DrawBuffers::Points3D &points_3d = draw_buffers.points_3d;
 	DrawBuffers::Points2D &points_2d = draw_buffers.points_2d;
 
-	// Transform each 3D point
+	// Transform each 3D point and clip the coordinates outside the normalized box
 	size_t numPoints = vertices.size();
 	for (size_t i = 0; i < numPoints; ++i) {
-		points_3d[i] = trans * vertices[i];
-	}
-
-	// Clip the coordinates outside the normalized box
-	for (size_t i = 0; i < numPoints; ++i) {
-		need_draw[i] = clip(points_3d[i]);
-	}
-
-	// Perspective division
-	for (size_t i = 0; i < numPoints; ++i) {
-		if (need_draw[i]) points_3d[i].euclid();
+		Vector4 point4d = trans * (Vector4)vertices[i]; // Transform each vertex
+		need_draw[i] = clip(point4d); // Clip coordinates using the homogeneous coordinates
+		points_3d[i] = point4d; // Transform into euclidean space (perspective division)
 	}
 
 	// Viewport transformation
@@ -476,7 +468,7 @@ void Draw::calcVertexNormals(
 	// Calculate the normals' segments other end vertices
 	size_t numVertices = meshModel.vertices.size();
 	for (size_t i = 0; i < numVertices; ++i) {
-		normals_buffers.points_3d[i] = Vector4::euclid_add(meshModel.normals[i] & length, meshModel.vertices[i]);
+		normals_buffers.points_3d[i] = Vector3::add(meshModel.normals[i] & length, meshModel.vertices[i]);
 	}
 
 	// Calculate the projection

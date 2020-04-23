@@ -5,6 +5,7 @@
 #include "Object.h"
 #include "Camera.h"
 #include "Vector4.h"
+#include "Vector3.h"
 #include "Point.h"
 #include "Pixel.h"
 #include "Screen.h"
@@ -16,7 +17,7 @@ typedef enum { SHADING_WIRE, SHADING_FLAT, SHADING_GOURAUD, SHADING_PHONG, SHADI
 
 struct DrawBuffers {
 	typedef std::vector<bool> NeedDraw;
-	typedef std::vector<Vector4> Points3D;
+	typedef std::vector<Vector3> Points3D;
 	typedef std::vector<PointI> Points2D;
 
 	NeedDraw need_draw;

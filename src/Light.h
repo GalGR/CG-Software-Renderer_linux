@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Vector4.h"
+#include "Vector3.h"
 #include "Material.h"
 
 struct Light {
@@ -11,10 +11,10 @@ struct Light {
 	Light() = default;
 	Light(double intensity) : intensity(intensity) {}
 
-	virtual Color calc(const Material &material, const Vector4 &normal, const Vector4 &pos, const Vector4 &cam_pos) const = 0;
+	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const = 0;
 
 	template <typename LightsArr>
-	static Color calc(const LightsArr &lights_arr, const Material &material, const Vector4 &normal, const Vector4 &pos, const Vector4 &cam_pos) {
+	static Color calc(const LightsArr &lights_arr, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
 		size_t numLights = lights_arr.size();
 		Color mean_color = 0;
 		for (size_t i = 0; i < numLights; ++i) {
@@ -32,7 +32,7 @@ struct Light {
 struct AmbientLight : public Light {
 	AmbientLight() = default;
 	AmbientLight(double intensity) : Light(intensity) {}
-	virtual Color calc(const Material &material, const Vector4 &normal, const Vector4 &pos, const Vector4 &cam_pos) const override {
+	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const override {
 		Color color;
 		for (short i = 0; i < 3; ++i) {
 			color[i] = (UINT8)std::round(std::min(255.0, intensity * (double)material.k_ambient[i]));
@@ -42,19 +42,19 @@ struct AmbientLight : public Light {
 };
 
 struct DirectionalLight : public Light {
-	Vector4 dir;
+	Vector3 dir;
 
 	DirectionalLight() = default;
 	DirectionalLight(double intensity) : Light(intensity) {}
-	virtual Color calc(const Material &material, const Vector4 &normal, const Vector4 &pos, const Vector4 &cam_pos) const override {
-		Vector4 dir = Vector4::normal(this->dir);
-		Vector4 cam_normal = Vector4::normal(pos.to(cam_pos));
+	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const override {
+		Vector3 dir = Vector3::normal(this->dir);
+		Vector3 cam_normal = Vector3::normal(pos.to(cam_pos));
 		//double cos_theta = std::abs(dir & normal);
-		double cos_theta = std::max(0.0, -(dir & normal));
-		Vector4 r_dir = /*Vector4::normal*/(Vector4::euclid_sub(dir, 2 & (/*std::abs*/(dir & normal) & normal)));
-		const Vector4 &v_cam = cam_normal;
+		double cos_theta = std::max(0.0, -(dir * normal));
+		Vector3 r_dir = /*Vector3::normal*/(Vector3::sub(dir, 2 * (/*std::abs*/(dir * normal) * normal)));
+		const Vector3 &v_cam = cam_normal;
 		//double cos_alpha = std::abs(r_dir & v_cam);
-		double cos_alpha = std::max(0.0, r_dir & v_cam);
+		double cos_alpha = std::max(0.0, r_dir * v_cam);
 		Color color;
 		for (short i = 0; i < 3; ++i) {
 			color[i] = (UINT8)std::round(std::min(255.0, intensity * cos_theta * (double)material.k_diffuse[i] + intensity * std::pow(cos_alpha, material.n_specular) * (double)material.k_specular[i]));
@@ -64,19 +64,19 @@ struct DirectionalLight : public Light {
 };
 
 struct PointLight : public Light {
-	Vector4 pos;
+	Vector3 pos;
 
 	PointLight() = default;
 	PointLight(double intensity) : Light(intensity) {}
-	virtual Color calc(const Material &material, const Vector4 &normal, const Vector4 &pos, const Vector4 &cam_pos) const override {
-		Vector4 cam_normal = Vector4::normal(pos.to(cam_pos));
-		Vector4 dir = Vector4::normal(this->pos.to(pos));
+	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const override {
+		Vector3 cam_normal = Vector3::normal(pos.to(cam_pos));
+		Vector3 dir = Vector3::normal(this->pos.to(pos));
 		//double cos_theta = std::abs(dir & normal);
 		double cos_theta = std::max(0.0, -(dir & normal));
-		Vector4 r_dir = /*Vector4::normal*/(Vector4::euclid_sub(dir, 2 & (/*std::abs*/(dir & normal) & normal)));
-		const Vector4 &v_cam = cam_normal;
+		Vector3 r_dir = /*Vector3::normal*/(Vector3::sub(dir, 2 * (/*std::abs*/(dir * normal) * normal)));
+		const Vector3 &v_cam = cam_normal;
 		//double cos_alpha = std::abs(r_dir & v_cam);
-		double cos_alpha = std::max(0.0, r_dir & v_cam);
+		double cos_alpha = std::max(0.0, r_dir * v_cam);
 		Color color;
 		for (short i = 0; i < 3; ++i) {
 			color[i] = (UINT8)std::round(std::min(255.0, intensity * cos_theta * (double)material.k_diffuse[i] + intensity * std::pow(cos_alpha, material.n_specular) * (double)material.k_specular[i]));

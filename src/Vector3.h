@@ -1,8 +1,9 @@
 #pragma once
 
-#include <array>
-
 #define EPS 1.0E-10
+
+struct Vector4;
+#include "Vector4.h"
 
 struct Vector3 {
 	double x, y, z;
@@ -16,6 +17,12 @@ struct Vector3 {
 	double operator ()(size_t i) { return (&x)[i]; }
 	double operator ()(size_t i) const { return (&x)[i]; }
 
+	// Get the Euclidean vector
+	static Vector3 euclid(const Vector3 &vector) { return Vector3(*this); }
+	Vector3 &euclid() { return *this; }
+
+	explicit operator Vector4() { return Vector4(*this); }
+
 	// Addition/Subtraction
 	static Vector3 add(const Vector3 &lhs, const Vector3 &rhs) {
 		Vector3 vector;
@@ -24,6 +31,7 @@ struct Vector3 {
 		}
 		return vector;
 	}
+	static Vector3 euclid_add(const Vector3 &lhs, const Vector3 &rhs) { return Vector3::add(lhs, rhs); }
 	static Vector3 sub(const Vector3 &lhs, const Vector3 &rhs) {
 		Vector3 vector;
 		for (int i = 0; i < 3; ++i) {
@@ -31,6 +39,7 @@ struct Vector3 {
 		}
 		return vector;
 	}
+	static Vector3 euclid_sub(const Vector3 &lhs, const Vector3 &rhs) { return Vector3::sub(lhs, rhs); }
 	friend Vector3 operator +(const Vector3 &lhs, const Vector3 &rhs) { return add(lhs, rhs); }
 	friend Vector3 operator -(const Vector3 &lhs, const Vector3 &rhs) { return sub(lhs, rhs); }
 
@@ -42,7 +51,9 @@ struct Vector3 {
 		}
 		return vector;
 	}
+	friend Vector3 operator &(double lhs, const Vector3 &rhs) { return lhs * rhs; }
 	friend Vector3 operator *(const Vector3 &lhs, double rhs) { return rhs * lhs; }
+	friend Vector3 operator &(const Vector3 &lhs, double rhs) { return lhs * rhs; }
 
 	// Scalar Division
 	friend Vector3 operator /(double lhs, const Vector3 &rhs) {
@@ -52,6 +63,7 @@ struct Vector3 {
 		}
 		return vector;
 	}
+	friend Vector3 operator /(double lhs, const Vector3 &rhs) { return lhs / rhs; }
 	friend Vector3 operator /(const Vector3 &lhs, double rhs) {
 		Vector3 vector;
 		for (int i = 0; i < 3; ++i) {
@@ -59,6 +71,7 @@ struct Vector3 {
 		}
 		return vector;
 	}
+	friend Vector3 operator /(const Vector3 &lhs, double rhs) { return lhs / rhs; }
 
 	// Dot Product
 	friend double operator *(const Vector3 &lhs, const Vector3 &rhs) {
@@ -68,6 +81,7 @@ struct Vector3 {
 		}
 		return sum;
 	}
+	friend double operator &(const Vector3 &lhs, const Vector3 &rhs) { return lhs * rhs; }
 
 	// Cross Product
 	friend Vector3 operator ^(const Vector3 &lhs, const Vector3 &rhs) {
@@ -78,15 +92,11 @@ struct Vector3 {
 		return vector;
 	}
 
-	// Vector Euclidean length
+	// Vector length
 	double length() const {
 		return sqrt((*this) * (*this));
 	}
-
-	// Vector Homogeneous length
-	double length() const {
-		return sqrt((*this) * (*this));
-	}
+	double euclid_length() const { return this->length(); }
 
 	// Normal vector
 	static Vector3 normal(const Vector3 &vector) {
@@ -130,6 +140,7 @@ struct Vector3 {
 		Vector3 diff = sub(lhs, rhs);
 		return diff[0] < EPS && diff[1] < EPS && diff[2] < EPS;
 	}
+	friend bool euclid_equals(const Vector3 &lhs, const Vector3 &rhs) { return equals(lhs, rhs); }
 	friend bool operator ==(const Vector3 &lhs, const Vector3 &rhs) { return equals(lhs, rhs); }
 
 	// Negation
@@ -140,8 +151,12 @@ struct Vector3 {
 		}
 		return vector;
 	}
+	static Vector3 euclid_neg(const Vector3 &vec) { return neg(vec); }
 	friend Vector3 operator -(const Vector3 &vec) { return neg(vec); }
 	
 	// Self negation
 	Vector3 &neg() { return (*this) = neg(*this); }
+	Vector3 &euclid_neg() { return this->neg() }
 };
+
+#include "Vector4.h"

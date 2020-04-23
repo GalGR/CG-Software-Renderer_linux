@@ -2,11 +2,15 @@
 
 #define EPS 1.0E-10
 
+struct Vector3;
+#include "Vector3.h"
+
 struct Vector4 {
 	double x, y, z, w;
 
 	// Constructors
 	Vector4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 1.0) : x(x), y(y), z(z), w(w) {}
+	Vector4(const Vector3 &vec3) : Vector4(vec3.x, vec3.y, vec3.z) {}
 
 	// Get the Homogeneous coordinates
 	double &operator [](size_t i) { return (&x)[i]; }
@@ -29,6 +33,9 @@ struct Vector4 {
 	Vector4 &euclid() {
 		return (*this) = euclid(*this);
 	}
+
+	// Cast to Vector3 (to euclid)
+	operator Vector3() const { return Vector4::euclid(*this); }
 
 	// Homogeneous Addition/Subtraction
 	static Vector4 add(const Vector4 &lhs, const Vector4 &rhs) {
