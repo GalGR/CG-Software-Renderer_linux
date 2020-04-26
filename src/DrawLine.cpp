@@ -113,12 +113,12 @@ void calcLine(PointI p1, PointI p2, Color color, ScreenPixels &pixels, double de
 	}
 }
 
-void drawLine(PointI p1, PointI p2, Color color, ScreenPixels &pixels, std::vector<Pixel> &list_pixels, double depth)
+void drawLine(PointI p1, PointI p2, Color color, ScreenPixels &pixels, double depth)
 {
 	Renderer renderer;
 	
 	calcLine(p1, p2, color, pixels, depth);
 
 	// Finished calculating the pixels -- now drawing them
-	renderer.drawPixels(pixels.getListPixels(list_pixels));
+	renderer.drawScreenPixels(pixels);
 }
