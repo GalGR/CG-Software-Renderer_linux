@@ -88,11 +88,6 @@ int num_control_threads;
 // Number of render threads
 int num_render_threads;
 
-#include "DefaultKeybind.h"
-
-#include "Action.h"
-
-
 // Keyboard-Action variables
 typedef KeyPress<int> KeyboardPress;
 typedef KeyPress<int> MousePress;
