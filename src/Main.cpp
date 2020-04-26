@@ -148,7 +148,7 @@ TwBar* bar;
 GLFWwindow *window = NULL;
 
 // Screen dimensions
-MyScreen screen = { START_WIDTH, START_HEIGHT };
+ScreenState screen = { START_WIDTH, START_HEIGHT };
 //size_t g_width = START_WIDTH;
 //size_t g_height = START_HEIGHT;
 

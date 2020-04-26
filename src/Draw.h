@@ -51,7 +51,7 @@ public:
 	//	const Matrix4 &proj,
 	//	DrawBuffers &polygons_buffer,
 	//	ScreenPixels &pixels,
-	//	const MyScreen &screen
+	//	const ScreenState &screen
 	//);
 	//static void drawScene(
 	//	const Camera &camera,
@@ -71,7 +71,7 @@ public:
 		const Vertices &vertices,
 		const Matrix4 &trans,
 		DrawBuffers &draw_buffers,
-		const MyScreen &screen
+		const ScreenState &screen
 	);
 	static void drawScene(
 		std::vector<Pixel> &list_pixels,
@@ -84,7 +84,7 @@ public:
 		DrawBuffers &normals_buffers,
 		DrawBuffers &axes_buffers,
 		ScreenPixels &pixels,
-		const MyScreen &screen,
+		const ScreenState &screen,
 		bool draw_bounding_box = false,
 		bool draw_vertex_normals = false,
 		bool draw_world_axes = false,
@@ -103,7 +103,7 @@ public:
 		DrawBuffers &normals_buffers,
 		DrawBuffers &axes_buffers,
 		ScreenPixels &pixels,
-		const MyScreen &screen,
+		const ScreenState &screen,
 		bool draw_bounding_box = false,
 		bool draw_vertex_normals = false,
 		bool draw_world_axes = false,
@@ -121,7 +121,7 @@ public:
 		DrawBuffers &mesh_buffers,
 		DrawBuffers &normals_buffers,
 		ScreenPixels &pixels,
-		const MyScreen &screen,
+		const ScreenState &screen,
 		Color color = WHITE
 	);
 	static void calcBoundingBox(
@@ -129,7 +129,7 @@ public:
 		const Matrix4 &trans,
 		DrawBuffers &bbox_buffers,
 		ScreenPixels &pixels,
-		const MyScreen &screen,
+		const ScreenState &screen,
 		Color color = BLUE
 	);
 	static void calcVertexNormals(
@@ -138,7 +138,7 @@ public:
 		DrawBuffers &mesh_buffers,
 		DrawBuffers &normals_buffers,
 		ScreenPixels &pixels,
-		const MyScreen &screen,
+		const ScreenState &screen,
 		double length = 1.0,
 		Color color = YELLOW
 	);
@@ -146,7 +146,7 @@ public:
 		const Matrix4 &trans,
 		DrawBuffers &axes_buffers,
 		ScreenPixels &pixels,
-		const MyScreen &screen,
+		const ScreenState &screen,
 		double length = 3.0, // Length for the axes
 		std::array<Color, 3> colors = { RED, GREEN, BLUE } // x=RED, y=GREEN, z=BLUE
 	);

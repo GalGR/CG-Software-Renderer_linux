@@ -25,7 +25,7 @@ static inline bool clip(const V &v) {
 }
 
 template <typename V>
-static inline PointI to_screen_coords(const V &v, const MyScreen &screen) {
+static inline PointI to_screen_coords(const V &v, const ScreenState &screen) {
 	return PointI{
 		INT_ROUND((v[0] + 1) * (double)(screen.x) / 2.0),
 		INT_ROUND((v[1] + 1) * (double)(screen.y) / 2.0)
@@ -33,14 +33,14 @@ static inline PointI to_screen_coords(const V &v, const MyScreen &screen) {
 }
 
 template <typename V>
-static inline std::array<double, 2> to_screen_coords_double(const V &v, const MyScreen &screen) {
+static inline std::array<double, 2> to_screen_coords_double(const V &v, const ScreenState &screen) {
 	return std::array<double, 2>{
 		((v[0] + 1) * (double)(screen.x) / 2.0),
 		((v[1] + 1) * (double)(screen.y) / 2.0)
 	};
 }
 
-static inline Vector4 to_view_coords(const PointI &p, const MyScreen &screen) {
+static inline Vector4 to_view_coords(const PointI &p, const ScreenState &screen) {
 	return Vector4{
 		((double)p.x * 2.0 / (double)(screen.x)) - 1.0,
 		((double)p.y * 2.0 / (double)(screen.y)) - 1.0
@@ -52,7 +52,7 @@ void Draw::calcProjection(
 	const Vertices &vertices,
 	const Matrix4 &trans,
 	DrawBuffers &draw_buffers,
-	const MyScreen &screen
+	const ScreenState &screen
 ) {
 	DrawBuffers::NeedDraw &need_draw = draw_buffers.need_draw;
 	DrawBuffers::Points3D &points_3d = draw_buffers.points_3d;
@@ -117,7 +117,7 @@ void Draw::drawScene(
 	DrawBuffers &normals_buffers,
 	DrawBuffers &axes_buffers,
 	ScreenPixels &pixels,
-	const MyScreen &screen,
+	const ScreenState &screen,
 	bool draw_bounding_box,
 	bool draw_vertex_normals,
 	bool draw_world_axes,
@@ -170,7 +170,7 @@ void Draw::calcScene(
 	DrawBuffers &normals_buffers,
 	DrawBuffers &axes_buffers,
 	ScreenPixels &pixels,
-	const MyScreen &screen,
+	const ScreenState &screen,
 	bool draw_bounding_box,
 	bool draw_vertex_normals,
 	bool draw_world_axes,
@@ -290,7 +290,7 @@ void Draw::calcObject(
 	DrawBuffers &mesh_buffers,
 	DrawBuffers &normals_buffers,
 	ScreenPixels &pixels,
-	const MyScreen &screen,
+	const ScreenState &screen,
 	Color color
 ) {
 	DrawBuffers::NeedDraw &need_draw = mesh_buffers.need_draw;
@@ -372,7 +372,7 @@ void Draw::calcBoundingBox(
 	const Matrix4 &trans,
 	DrawBuffers &bbox_buffers,
 	ScreenPixels &pixels,
-	const MyScreen &screen,
+	const ScreenState &screen,
 	Color color
 ) {
 	DrawBuffers::NeedDraw &need_draw = bbox_buffers.need_draw;
@@ -463,7 +463,7 @@ void Draw::calcVertexNormals(
 	DrawBuffers &mesh_buffers,
 	DrawBuffers &normals_buffers,
 	ScreenPixels &pixels,
-	const MyScreen &screen,
+	const ScreenState &screen,
 	double length,
 	Color color
 ) {
@@ -489,7 +489,7 @@ void Draw::calcAxes(
 	const Matrix4 &trans,
 	DrawBuffers &axes_buffers,
 	ScreenPixels &pixels,
-	const MyScreen &screen,
+	const ScreenState &screen,
 	double length,
 	std::array<Color, 3> colors
 ) {
@@ -520,7 +520,7 @@ void Draw::calcAxes(
 //	const Matrix4 &proj,
 //	DrawBuffers &polygons_buffer,
 //	ScreenPixels &pixels,
-//	const MyScreen &screen
+//	const ScreenState &screen
 //) {
 //	
 //}
