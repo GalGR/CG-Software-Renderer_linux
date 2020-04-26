@@ -4,4 +4,4 @@
 **/obj/
 **/dep/
 CMakeCache.txt
-src/freeglut/build/
+src/**/build/
