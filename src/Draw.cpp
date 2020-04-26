@@ -107,7 +107,6 @@ void Draw::calcProjection(
 //}
 
 void Draw::drawScene(
-	std::vector<Pixel> &list_pixels,
 	const Camera &camera,
 	const Object &object,
 	const Lighting &lighting,
@@ -151,11 +150,6 @@ void Draw::drawScene(
 	);
 
 #ifdef SCREEN_PIXELS_IMPLEMENT_BUFFER
-	// Render the pixels
-	//pixels.getListPixels(list_pixels);
-	//if (list_pixels.size() > 0) {
-	//	renderer.drawPixels(list_pixels);
-	//}
 	renderer.drawScreenPixels(pixels);
 #endif
 }
@@ -198,7 +192,7 @@ void Draw::calcScene(
 #endif
 
 	// Render the pixels and return if there is no object to render
-	if (object.meshModel.vertices.size() == 0) return;
+	if (object.meshModel().vertices.size() == 0) return;
 
 	// World-View-Projection matrix transformation (for object-world-bound entities)
 	trans = trans * object.world;
@@ -262,7 +256,7 @@ void Draw::calcScene(
 	// Draw the vertex normals
 	pixels.clear();
 	if (draw_vertex_normals) calcVertexNormals(
-		object.meshModel,
+		object.meshModel(),
 		trans,
 		mesh_buffers,
 		normals_buffers,
@@ -297,7 +291,7 @@ void Draw::calcObject(
 	DrawBuffers::Points3D &points_3d = mesh_buffers.points_3d;
 	DrawBuffers::Points2D &points_2d = mesh_buffers.points_2d;
 
-	const MeshModel &meshModel = object.meshModel;
+	const MeshModel &meshModel = object.meshModel();
 
 	// Check if there is an object to render
 	if (meshModel.vertices.size() == 0) return;

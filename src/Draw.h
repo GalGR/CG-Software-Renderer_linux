@@ -74,7 +74,6 @@ public:
 		const ScreenState &screen
 	);
 	static void drawScene(
-		std::vector<Pixel> &list_pixels,
 		const Camera &camera,
 		const Object &object,
 		const Lighting &lighting,
