@@ -10,11 +10,27 @@
 
 struct Light {
 	double intensity;
+	typedef Color (*calc_t)(const Light&, const Material&, const Vector3&, const Vector3&, const Vector3&);
+	calc_t calc_f;
 
-	Light() = default;
-	Light(double intensity) : intensity(intensity) {}
+	Light(calc_t calc_f = NULL) : calc_f(calc_f) {}
+	Light(double intensity, calc_t calc_f = NULL) : calc_f(calc_f), intensity(intensity) {}
 
-	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const = 0;
+	Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const {
+		return this->calc_f(*this, material, normal, pos, cam_pos);
+	}
+
+	inline void setCalc(calc_t calc_f) { this->calc_f = calc_f; }
+	template <typename Light_T> inline void setCalc() { this->calc_f = Light_T::calc; }
+
+	inline void setIntensity(double intensity) { this->intensity = intensity; }
+	virtual void setVector(const Vector3 &vec) { assert(0); }
+
+	inline const double &getIntensity() const { return this->intensity; }
+	inline double &getIntensity() { return this->intensity; }
+
+	virtual const Vector3 &getVector() const { assert(0); };
+	virtual Vector3 &getVector() { assert(0); };
 
 	template <typename LightsArr>
 	static Color calc(const LightsArr &lights_arr, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
@@ -32,25 +48,42 @@ struct Light {
 	}
 };
 
-struct AmbientLight : public Light {
-	AmbientLight() = default;
-	AmbientLight(double intensity) : Light(intensity) {}
-	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const override {
+struct VectorLight : Light {
+	Vector3 vec;
+
+	VectorLight(calc_t calc_f = NULL) : Light(calc_f) {}
+	VectorLight(double intensity, calc_t calc_f = NULL) : Light(intensity, calc_f) {}
+	VectorLight(const Vector3 &vec, calc_t calc_f = NULL) : vec(vec), Light(calc_f) {}
+	VectorLight(const Vector3 &vec, double intensity, calc_t calc_f = NULL) : vec(vec), Light(intensity, calc_f) {}
+
+	virtual void setVector(const Vector3 &vec) override { this->vec = vec; }
+
+	virtual const Vector3 &getVector() const override { return this->vec; }
+	virtual Vector3 &getVector() override { return this->vec; }
+};
+
+struct AmbientLight : Light {
+	AmbientLight() : Light(this->calc) {}
+	AmbientLight(double intensity) : Light(intensity, this->calc) {}
+
+	static Color calc(const Light &light, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
 		Color color;
 		for (short i = 0; i < 3; ++i) {
-			color[i] = (UINT8)std::round(std::min(255.0, intensity * (double)material.k_ambient[i]));
+			color[i] = (UINT8)std::round(std::min(255.0, light.intensity * (double)material.k_ambient[i]));
 		}
 		return color;
 	}
 };
 
-struct DirectionalLight : public Light {
-	Vector3 dir;
+struct DirectionalLight : VectorLight {
+	DirectionalLight() : VectorLight(this->calc) {}
+	DirectionalLight(double intensity) : VectorLight(intensity, this->calc) {}
+	DirectionalLight(const Vector3 &vec) : VectorLight(vec, this->calc) {}
+	DirectionalLight(const Vector3 &vec, double intensity) : VectorLight(vec, intensity, this->calc) {}
 
-	DirectionalLight() = default;
-	DirectionalLight(double intensity) : Light(intensity) {}
-	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const override {
-		Vector3 dir = Vector3::normal(this->dir);
+	static Color calc(const Light &light, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
+		const VectorLight &vec_light = (const VectorLight&)light;
+		Vector3 dir = Vector3::normal(vec_light.vec);
 		Vector3 cam_normal = Vector3::normal(pos.to(cam_pos));
 		//double cos_theta = std::abs(dir & normal);
 		double cos_theta = std::max(0.0, -(dir * normal));
@@ -60,20 +93,22 @@ struct DirectionalLight : public Light {
 		double cos_alpha = std::max(0.0, r_dir * v_cam);
 		Color color;
 		for (short i = 0; i < 3; ++i) {
-			color[i] = (UINT8)std::round(std::min(255.0, intensity * cos_theta * (double)material.k_diffuse[i] + intensity * std::pow(cos_alpha, material.n_specular) * (double)material.k_specular[i]));
+			color[i] = (UINT8)std::round(std::min(255.0, vec_light.intensity * cos_theta * (double)material.k_diffuse[i] + vec_light.intensity * std::pow(cos_alpha, material.n_specular) * (double)material.k_specular[i]));
 		}
 		return color;
 	}
 };
 
-struct PointLight : public Light {
-	Vector3 pos;
+struct PointLight : VectorLight {
+	PointLight() : VectorLight(this->calc) {}
+	PointLight(double intensity) : VectorLight(intensity, this->calc) {}
+	PointLight(const Vector3 &vec) : VectorLight(vec, this->calc) {}
+	PointLight(const Vector3 &vec, double intensity) : VectorLight(vec, intensity, this->calc) {}
 
-	PointLight() = default;
-	PointLight(double intensity) : Light(intensity) {}
-	virtual Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const override {
+	static Color calc(const Light &light, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
+		const VectorLight &vec_light = (const VectorLight&)light;
 		Vector3 cam_normal = Vector3::normal(pos.to(cam_pos));
-		Vector3 dir = Vector3::normal(this->pos.to(pos));
+		Vector3 dir = Vector3::normal(vec_light.vec.to(pos));
 		//double cos_theta = std::abs(dir & normal);
 		double cos_theta = std::max(0.0, -(dir & normal));
 		Vector3 r_dir = /*Vector3::normal*/(Vector3::sub(dir, 2 * (/*std::abs*/(dir * normal) * normal)));
@@ -82,19 +117,25 @@ struct PointLight : public Light {
 		double cos_alpha = std::max(0.0, r_dir * v_cam);
 		Color color;
 		for (short i = 0; i < 3; ++i) {
-			color[i] = (UINT8)std::round(std::min(255.0, intensity * cos_theta * (double)material.k_diffuse[i] + intensity * std::pow(cos_alpha, material.n_specular) * (double)material.k_specular[i]));
+			color[i] = (UINT8)std::round(std::min(255.0, vec_light.intensity * cos_theta * (double)material.k_diffuse[i] + vec_light.intensity * std::pow(cos_alpha, material.n_specular) * (double)material.k_specular[i]));
 		}
 		return color;
 	}
 };
 
 struct Lighting {
-	AmbientLight *ambient_light;
-	Light *light1;
-	Light *light2;
+	std::vector<std::unique_ptr<Light>> lights;
 
-	const Light &operator [](size_t i) const { return *((Light**)&ambient_light)[i]; }
-	Light &operator [](size_t i) { return *((Light**)&ambient_light)[i]; }
+	Lighting() = default;
 
-	size_t size() const { return 3; }
+	void add(Light &&light) { lights.push_back(std::make_unique<Light>(light)); }
+	void add(const Light &light) { lights.push_back(std::make_unique<Light>(light)); }
+
+	void push_back(Light &&light) { this->add(std::move(light)); }
+	void push_back(const Light &light) { this->add(light); }
+
+	const Light &operator [](size_t i) const { return *lights[i]; }
+	Light &operator [](size_t i) { return *lights[i]; }
+
+	size_t size() const { return lights.size(); }
 };

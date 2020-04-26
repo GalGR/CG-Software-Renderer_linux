@@ -180,11 +180,6 @@ Object &object = scene.object;
 Camera &camera = scene.camera;
 
 // Lighting
-AmbientLight ambient_light;
-PointLight point_light1;
-PointLight point_light2;
-DirectionalLight directional_light1;
-DirectionalLight directional_light2;
 Lighting &lighting = scene.lighting;
 
 // Mesh draw buffers
@@ -262,22 +257,10 @@ void update_motion(Motion &motion,
 	Action up, Action down);
 
 void setLightMode(int light_num, LightingEnum &light_mode, const LightingEnum &new_light_mode);
-
 void TW_CALL setLight1Mode(const void *value, void *clientData) { setLightMode(1, light1_mode, *(LightingEnum*)value); }
 void TW_CALL setLight2Mode(const void *value, void *clientData) { setLightMode(2, light2_mode, *(LightingEnum*)value); }
 void TW_CALL getLight1Mode(void *value, void *clientData) { *(LightingEnum*)value = light1_mode; }
 void TW_CALL getLight2Mode(void *value, void *clientData) { *(LightingEnum*)value = light2_mode; }
-
-void TW_CALL setLight1Intensity(const void *value, void *clientData) { lighting.light1->intensity = *(double*)value; }
-void TW_CALL setLight2Intensity(const void *value, void *clientData) { lighting.light2->intensity = *(double*)value; }
-void TW_CALL getLight1Intensity(void *value, void *clientData) { *(double*)value = lighting.light1->intensity; }
-void TW_CALL getLight2Intensity(void *value, void *clientData) { *(double*)value = lighting.light2->intensity; }
-
-void TW_CALL setLight1PosDir(const void *value, void *clientData) { *((std::array<double, 3>*)(&((PointLight*)lighting.light1)->pos)) = *(std::array<double, 3>*)value; }
-void TW_CALL setLight2PosDir(const void *value, void *clientData) { *((std::array<double, 3>*)(&((PointLight*)lighting.light2)->pos)) = *(std::array<double, 3>*)value; }
-void TW_CALL getLight1PosDir(void *value, void *clientData) { *(std::array<double, 3>*)value = *((std::array<double, 3>*)(&((PointLight*)lighting.light1)->pos)); }
-void TW_CALL getLight2PosDir(void *value, void *clientData) { *(std::array<double, 3>*)value = *((std::array<double, 3>*)(&((PointLight*)lighting.light2)->pos)); }
-
 
 int main(int argc, char *argv[])
 {
@@ -394,18 +377,14 @@ void initTweakBar() {
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRW(bar, "Ambient Light Intensity", TW_TYPE_DOUBLE, &lighting.ambient_light->intensity, " min=0.0, max=1.0, step=0.01, help='The ambient light's intensity' ");
-	//TwAddVarRW(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, &lighting.light1->intensity, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
-	//TwAddVarRW(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, &lighting.light2->intensity, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
-	TwAddVarCB(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, setLight1Intensity, getLight1Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
-	TwAddVarCB(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, setLight2Intensity, getLight2Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
+	TwAddVarRW(bar, "Ambient Light Intensity", TW_TYPE_DOUBLE, &lighting[0].getIntensity(), " min=0.0, max=1.0, step=0.01, help='The ambient light's intensity' ");
+	TwAddVarRW(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, &lighting[1].getIntensity(), " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
+	TwAddVarRW(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, &lighting[2].getIntensity(), " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	//TwAddVarRW(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, &((PointLight*)lighting.light1)->pos, " help='Light 1's position/direction' ");
-	//TwAddVarRW(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, &((PointLight*)lighting.light2)->pos, " help='Light 1's position/direction' ");
-	TwAddVarCB(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, setLight1PosDir, getLight1PosDir, NULL, " help='Light 1's position/direction' ");
-	TwAddVarCB(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, setLight2PosDir, getLight2PosDir, NULL, " help='Light 1's position/direction' ");
+	TwAddVarRW(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, &lighting[1].getVector(), " help='Light 1's position/direction' ");
+	TwAddVarRW(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, &lighting[2].getVector(), " help='Light 1's position/direction' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
@@ -449,18 +428,9 @@ void initObject() {
 
 void initVariables() {
 	// Add light sources
-	ambient_light.intensity = AMBIENT_LIGHT_INTENSITY;
-	point_light1.intensity = LIGHT1_INTENSITY;
-	point_light2.intensity = LIGHT2_INTENSITY;
-	point_light1.pos = POINT_LIGHT1_POS;
-	point_light2.pos = POINT_LIGHT2_POS;
-	directional_light1.intensity = point_light1.intensity;
-	directional_light2.intensity = point_light2.intensity;
-	directional_light1.dir = point_light1.pos;
-	directional_light2.dir = point_light2.pos;
-	lighting.ambient_light = &ambient_light;
-	lighting.light1 = &point_light1;
-	lighting.light2 = &point_light2;
+	lighting.push_back(AmbientLight(AMBIENT_LIGHT_INTENSITY));
+	lighting.push_back(PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY));
+	lighting.push_back(PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY));
 
 	// Reserve the number of pixels
 	list_pixels.clear();
@@ -1107,23 +1077,13 @@ void setLightMode(int light_num, LightingEnum &light_mode, const LightingEnum &n
 	case LIGHT_POINT:
 	{
 		light_mode = LIGHT_DIR;
-		PointLight *point_light = (light_num == 1) ? &point_light1 : &point_light2;
-		DirectionalLight *directional_light = (light_num == 1) ? &directional_light1 : &directional_light2;
-		Light **p_lighting_light = (light_num == 1) ? &lighting.light1 : &lighting.light2;
-		directional_light->intensity = point_light->intensity;
-		directional_light->dir = point_light->pos;
-		*p_lighting_light = (Light*)directional_light;
+		lighting[light_num].setCalc<PointLight>();
 		break;
 	}
 	case LIGHT_DIR:
 	{
 		light_mode = LIGHT_POINT;
-		PointLight *point_light = (light_num == 1) ? &point_light1 : &point_light2;
-		DirectionalLight *directional_light = (light_num == 1) ? &directional_light1 : &directional_light2;
-		Light **p_lighting_light = (light_num == 1) ? &lighting.light1 : &lighting.light2;
-		point_light->intensity = directional_light->intensity;
-		point_light->pos = directional_light->dir;
-		*p_lighting_light = (Light*)point_light;
+		lighting[light_num].setCalc<DirectionalLight>();
 		break;
 	}
 	}
