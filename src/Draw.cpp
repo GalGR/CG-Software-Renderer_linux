@@ -6,6 +6,8 @@
 #include "DrawPolygon.h"
 #include "Barycentric.h"
 
+#include <cmath>
+
 static Renderer renderer;
 
 #define ROUND(X) floor(X)

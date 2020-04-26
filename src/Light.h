@@ -1,6 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <memory>
+#include <cmath>
+#include <assert.h>
 
 #include "Vector3.h"
 #include "Material.h"

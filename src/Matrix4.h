@@ -4,6 +4,7 @@
 #include "PI.h"
 
 #include <array>
+#include <cmath>
 
 struct Matrix4 {
 	std::array<Vector4, 4> arr;

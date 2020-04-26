@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include <cmath>
+
 void Camera::update_inv_view() {
 	Matrix4 inv_rot = Matrix4::transpose(this->rot);
 	Matrix4 inv_translation = Matrix4::inv_translation(this->pos[0], this->pos[1], this->pos[2]);

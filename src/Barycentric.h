@@ -4,6 +4,7 @@
 #include "Vector3.h"
 #include "Point.h"
 #include <array>
+#include <cmath>
 
 class Bary {
 private:

@@ -1,6 +1,8 @@
 #include "MeshModel.h"
 
 #include <assert.h>
+#include <algorithm>
+#include <cmath>
 
 static bool check_faces(const std::vector<Vector4> &vertices, const std::vector<Face> &faces) {
 	size_t numVertices = vertices.size();
