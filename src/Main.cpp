@@ -180,9 +180,6 @@ DrawBuffers normals_buffers;
 // World/Object axes draw buffers
 DrawBuffers axes_buffers;
 
-// Pixels array
-std::vector<Pixel> list_pixels(START_PIXELS);
-
 // Pixels screen buffer
 ScreenPixels pixels;
 
