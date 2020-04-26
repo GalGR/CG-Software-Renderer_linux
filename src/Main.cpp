@@ -79,20 +79,6 @@ static inline int in_range(int p, int lo, int hi) {
 #define POINT_LIGHT1_POS Vector4(10.0, 0.0, 30.0)
 #define POINT_LIGHT2_POS Vector4(-15.0, 20.0, -35.0)
 
-//#define K_AMBIENT 0xff880088
-//#define K_DIFFUSE 0xff33aa11
-//#define K_SPECULAR 0xff808080
-//#define N_SPECULAR 8
-#define K_AMBIENT 0xff'a0'60'60
-#define K_DIFFUSE 0xff'33'aa'11
-#define K_SPECULAR 0xff'60'60'60
-#define N_SPECULAR 8
-
-#define INITIAL_LIGHTING_MODE LIGHT_POINT
-#define INITIAL_LIGHT1_MODE INITIAL_LIGHTING_MODE
-#define INITIAL_LIGHT2_MODE INITIAL_LIGHTING_MODE
-#define INITIAL_SHADING_MODE SHADING_GOURAUD
-
 // Number of hardware supported parallel threads
 int num_hw_threads;
 
