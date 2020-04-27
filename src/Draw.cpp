@@ -51,12 +51,12 @@ template <typename Vertices>
 void Draw::calcProjection(
 	const Vertices &vertices,
 	const Matrix4 &trans,
-	DrawBuffer &draw_buffers,
+	DrawBuffer &draw_buffer,
 	const ScreenState &screen
 ) {
-	DrawBuffer::NeedDraw &need_draw = draw_buffers.need_draw;
-	DrawBuffer::Points3D &points_3d = draw_buffers.points_3d;
-	DrawBuffer::Points2D &points_2d = draw_buffers.points_2d;
+	DrawBuffer::NeedDraw &need_draw = draw_buffer.need_draw;
+	DrawBuffer::Points3D &points_3d = draw_buffer.points_3d;
+	DrawBuffer::Points2D &points_2d = draw_buffer.points_2d;
 
 	// Transform each 3D point and clip the coordinates outside the normalized box
 	size_t numPoints = vertices.size();
@@ -111,10 +111,10 @@ void Draw::drawScene(
 	const Object &object,
 	const Lighting &lighting,
 	ShadingEnum shading_mode,
-	DrawBuffer &mesh_buffers,
-	DrawBuffer &bbox_buffers,
-	DrawBuffer &normals_buffers,
-	DrawBuffer &axes_buffers,
+	DrawBuffer &mesh_buffer,
+	DrawBuffer &bbox_buffer,
+	DrawBuffer &normals_buffer,
+	DrawBuffer &axes_buffer,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	bool draw_bounding_box,
@@ -134,10 +134,10 @@ void Draw::drawScene(
 		object,
 		lighting,
 		shading_mode,
-		mesh_buffers,
-		bbox_buffers,
-		normals_buffers,
-		axes_buffers,
+		mesh_buffer,
+		bbox_buffer,
+		normals_buffer,
+		axes_buffer,
 		pixels,
 		screen,
 		draw_bounding_box,
@@ -159,10 +159,10 @@ void Draw::calcScene(
 	const Object &object,
 	const Lighting &lighting,
 	ShadingEnum shading_mode,
-	DrawBuffer &mesh_buffers,
-	DrawBuffer &bbox_buffers,
-	DrawBuffer &normals_buffers,
-	DrawBuffer &axes_buffers,
+	DrawBuffer &mesh_buffer,
+	DrawBuffer &bbox_buffer,
+	DrawBuffer &normals_buffer,
+	DrawBuffer &axes_buffer,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	bool draw_bounding_box,
@@ -180,7 +180,7 @@ void Draw::calcScene(
 	pixels.clear();
 	if (draw_world_axes) calcAxes(
 		trans,
-		axes_buffers,
+		axes_buffer,
 		pixels,
 		screen
 	);
@@ -201,7 +201,7 @@ void Draw::calcScene(
 	pixels.clear();
 	if (draw_object_axes) calcAxes(
 		trans,
-		axes_buffers,
+		axes_buffer,
 		pixels,
 		screen
 	);
@@ -223,8 +223,8 @@ void Draw::calcScene(
 		lighting,
 		shading_mode,
 		trans,
-		mesh_buffers,
-		normals_buffers,
+		mesh_buffer,
+		normals_buffer,
 		pixels,
 		screen,
 		obj_color
@@ -241,7 +241,7 @@ void Draw::calcScene(
 	if (draw_bounding_box) calcBoundingBox(
 		object.bBox,
 		trans,
-		bbox_buffers,
+		bbox_buffer,
 		pixels,
 		screen,
 		bbox_color
@@ -258,8 +258,8 @@ void Draw::calcScene(
 	if (draw_vertex_normals) calcVertexNormals(
 		object.meshModel(),
 		trans,
-		mesh_buffers,
-		normals_buffers,
+		mesh_buffer,
+		normals_buffer,
 		pixels,
 		screen,
 		object.normals_length,
@@ -281,15 +281,15 @@ void Draw::calcObject(
 	const Lighting &lighting,
 	ShadingEnum shading_mode,
 	const Matrix4 &trans,
-	DrawBuffer &mesh_buffers,
-	DrawBuffer &normals_buffers,
+	DrawBuffer &mesh_buffer,
+	DrawBuffer &normals_buffer,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	Color color
 ) {
-	DrawBuffer::NeedDraw &need_draw = mesh_buffers.need_draw;
-	DrawBuffer::Points3D &points_3d = mesh_buffers.points_3d;
-	DrawBuffer::Points2D &points_2d = mesh_buffers.points_2d;
+	DrawBuffer::NeedDraw &need_draw = mesh_buffer.need_draw;
+	DrawBuffer::Points3D &points_3d = mesh_buffer.points_3d;
+	DrawBuffer::Points2D &points_2d = mesh_buffer.points_2d;
 
 	const MeshModel &meshModel = object.meshModel();
 
@@ -297,10 +297,10 @@ void Draw::calcObject(
 	if (meshModel.vertices.size() == 0) return;
 
 	// Calculate the projection
-	calcProjection(meshModel.vertices, trans, mesh_buffers, screen);
+	calcProjection(meshModel.vertices, trans, mesh_buffer, screen);
 
 	//// Calculate the projection for the normals
-	//calcProjection(meshModel.normals, trans, normals_buffers, screen);
+	//calcProjection(meshModel.normals, trans, normals_buffer, screen);
 
 	// Calculate pixels
 	//pixels.clear();
@@ -364,20 +364,20 @@ void Draw::calcObject(
 void Draw::calcBoundingBox(
 	const BoundingBox &bBox,
 	const Matrix4 &trans,
-	DrawBuffer &bbox_buffers,
+	DrawBuffer &bbox_buffer,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	Color color
 ) {
-	DrawBuffer::NeedDraw &need_draw = bbox_buffers.need_draw;
-	DrawBuffer::Points3D &points_3d = bbox_buffers.points_3d;
-	DrawBuffer::Points2D &points_2d = bbox_buffers.points_2d;
+	DrawBuffer::NeedDraw &need_draw = bbox_buffer.need_draw;
+	DrawBuffer::Points3D &points_3d = bbox_buffer.points_3d;
+	DrawBuffer::Points2D &points_2d = bbox_buffer.points_2d;
 
 	// Calculate the bounding box vertices
 	std::array<Vector4, 8> boxVertices = bBox.calcBoxVertices();
 
 	// Calculate the projection
-	calcProjection(boxVertices, trans, bbox_buffers, screen);
+	calcProjection(boxVertices, trans, bbox_buffer, screen);
 
 	/* Connection of the points in the bounding box:
 
@@ -454,8 +454,8 @@ void Draw::calcBoundingBox(
 void Draw::calcVertexNormals(
 	const MeshModel &meshModel,
 	const Matrix4 &trans,
-	DrawBuffer &mesh_buffers,
-	DrawBuffer &normals_buffers,
+	DrawBuffer &mesh_buffer,
+	DrawBuffer &normals_buffer,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	double length,
@@ -464,24 +464,24 @@ void Draw::calcVertexNormals(
 	// Calculate the normals' segments other end vertices
 	size_t numVertices = meshModel.vertices.size();
 	for (size_t i = 0; i < numVertices; ++i) {
-		normals_buffers.points_3d[i] = Vector3::add(meshModel.normals[i] & length, meshModel.vertices[i]);
+		normals_buffer.points_3d[i] = Vector3::add(meshModel.normals[i] & length, meshModel.vertices[i]);
 	}
 
 	// Calculate the projection
-	calcProjection(normals_buffers.points_3d, trans, normals_buffers, screen);
+	calcProjection(normals_buffer.points_3d, trans, normals_buffer, screen);
 
 	// Calculate pixels
 	//pixels.clear();
 	for (size_t i = 0; i < numVertices; ++i) {
-		if (mesh_buffers.need_draw[i] && normals_buffers.need_draw[i]) {
-			calcLine(mesh_buffers.points_2d[i], normals_buffers.points_2d[i], color, pixels);
+		if (mesh_buffer.need_draw[i] && normals_buffer.need_draw[i]) {
+			calcLine(mesh_buffer.points_2d[i], normals_buffer.points_2d[i], color, pixels);
 		}
 	}
 }
 
 void Draw::calcAxes(
 	const Matrix4 &trans,
-	DrawBuffer &axes_buffers,
+	DrawBuffer &axes_buffer,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	double length,
@@ -496,13 +496,13 @@ void Draw::calcAxes(
 	};
 
 	// Calculate the projection
-	calcProjection(xyz, trans, axes_buffers, screen);
+	calcProjection(xyz, trans, axes_buffer, screen);
 
 	// Calculate pixels
 	//pixels.clear();
 	for (short i = 0; i < 3; ++i) {
-		if (axes_buffers.need_draw[3] && axes_buffers.need_draw[i]) {
-			calcLine(axes_buffers.points_2d[3], axes_buffers.points_2d[i], colors[i], pixels, -INFINITY);
+		if (axes_buffer.need_draw[3] && axes_buffer.need_draw[i]) {
+			calcLine(axes_buffer.points_2d[3], axes_buffer.points_2d[i], colors[i], pixels, -INFINITY);
 		}
 	}
 }

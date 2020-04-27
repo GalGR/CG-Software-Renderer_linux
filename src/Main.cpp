@@ -133,16 +133,16 @@ Camera &camera = scene.camera;
 Lighting &lighting = scene.lighting;
 
 // Mesh draw buffers
-DrawBuffer mesh_buffers;
+DrawBuffer mesh_buffer;
 
 // Bounding Box draw buffers
-DrawBuffer bbox_buffers;
+DrawBuffer bbox_buffer;
 
 // Normals draw buffers
-DrawBuffer normals_buffers;
+DrawBuffer normals_buffer;
 
 // World/Object axes draw buffers
-DrawBuffer axes_buffers;
+DrawBuffer axes_buffer;
 
 // Pixels screen buffer
 ScreenPixels pixels;
@@ -250,10 +250,10 @@ int main(int argc, char *argv[])
 	initTweakBar();
 
 	// Reserve the bounding box buffers
-	bbox_buffers.clear_reserve_resize(BOUNDING_BOX_VERTICES);
+	bbox_buffer.clear_reserve_resize(BOUNDING_BOX_VERTICES);
 
 	// Reserve the world axes buffers
-	axes_buffers.clear_reserve_resize(WORLD_AXES_VERTICES);
+	axes_buffer.clear_reserve_resize(WORLD_AXES_VERTICES);
 
 
 	// GLFW main loop
@@ -511,10 +511,10 @@ void initScene() {
 	size_t numVertexNormals = numPoints;
 
 	// Reserve the mesh buffers
-	mesh_buffers.clear_reserve_resize(numPoints);
+	mesh_buffer.clear_reserve_resize(numPoints);
 
 	// Reserve the normals buffers
-	normals_buffers.clear_reserve_resize(numVertexNormals);
+	normals_buffer.clear_reserve_resize(numVertexNormals);
 
 	// Initialize the object
 	initObject();
@@ -567,10 +567,10 @@ static inline void drawScene()
 		object,
 		lighting,
 		shading_mode,
-		mesh_buffers,
-		bbox_buffers,
-		normals_buffers,
-		axes_buffers,
+		mesh_buffer,
+		bbox_buffer,
+		normals_buffer,
+		axes_buffer,
 		pixels,
 		screen,
 		state[Action::BOUNDING_BOX],

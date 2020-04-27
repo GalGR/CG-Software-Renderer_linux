@@ -27,13 +27,13 @@ struct Variables {
 	// Shading mode
 	ShadingEnum shading_mode;
 	// Mesh draw buffers
-	DrawBuffer mesh_buffers;
+	DrawBuffer mesh_buffer;
 	// Bounding Box draw buffers
-	DrawBuffer bbox_buffers;
+	DrawBuffer bbox_buffer;
 	// Normals draw buffers
-	DrawBuffer normals_buffers;
+	DrawBuffer normals_buffer;
 	// World/Object axes draw buffers
-	DrawBuffer axes_buffers;
+	DrawBuffer axes_buffer;
 	// Screen dimensions
 	ScreenState screen = { START_WIDTH, START_HEIGHT };
 	// Actions state

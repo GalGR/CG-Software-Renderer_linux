@@ -44,7 +44,7 @@ public:
 	static void calcProjection(
 		const Vertices &vertices,
 		const Matrix4 &trans,
-		DrawBuffer &draw_buffers,
+		DrawBuffer &draw_buffer,
 		const ScreenState &screen
 	);
 	static void drawScene(
@@ -52,10 +52,10 @@ public:
 		const Object &object,
 		const Lighting &lighting,
 		ShadingEnum shading_mode,
-		DrawBuffer &mesh_buffers,
-		DrawBuffer &bbox_buffers,
-		DrawBuffer &normals_buffers,
-		DrawBuffer &axes_buffers,
+		DrawBuffer &mesh_buffer,
+		DrawBuffer &bbox_buffer,
+		DrawBuffer &normals_buffer,
+		DrawBuffer &axes_buffer,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		bool draw_bounding_box = false,
@@ -71,10 +71,10 @@ public:
 		const Object &object,
 		const Lighting &lighting,
 		ShadingEnum shading_mode,
-		DrawBuffer &mesh_buffers,
-		DrawBuffer &bbox_buffers,
-		DrawBuffer &normals_buffers,
-		DrawBuffer &axes_buffers,
+		DrawBuffer &mesh_buffer,
+		DrawBuffer &bbox_buffer,
+		DrawBuffer &normals_buffer,
+		DrawBuffer &axes_buffer,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		bool draw_bounding_box = false,
@@ -91,8 +91,8 @@ public:
 		const Lighting &lighting,
 		ShadingEnum shading_mode,
 		const Matrix4 &trans,
-		DrawBuffer &mesh_buffers,
-		DrawBuffer &normals_buffers,
+		DrawBuffer &mesh_buffer,
+		DrawBuffer &normals_buffer,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		Color color = WHITE
@@ -100,7 +100,7 @@ public:
 	static void calcBoundingBox(
 		const BoundingBox &bBox,
 		const Matrix4 &trans,
-		DrawBuffer &bbox_buffers,
+		DrawBuffer &bbox_buffer,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		Color color = BLUE
@@ -108,8 +108,8 @@ public:
 	static void calcVertexNormals(
 		const MeshModel &meshModel,
 		const Matrix4 &trans,
-		DrawBuffer &mesh_buffers,
-		DrawBuffer &normals_buffers,
+		DrawBuffer &mesh_buffer,
+		DrawBuffer &normals_buffer,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		double length = 1.0,
@@ -117,7 +117,7 @@ public:
 	);
 	static void calcAxes(
 		const Matrix4 &trans,
-		DrawBuffer &axes_buffers,
+		DrawBuffer &axes_buffer,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		double length = 3.0, // Length for the axes

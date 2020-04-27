@@ -26,3 +26,9 @@ struct DrawBuffer {
 		points_2d.resize(reserveAmount);
 	}
 };
+
+struct DrawBuffers {
+	struct {
+		DrawBuffer mesh_buffer
+	};
+};
