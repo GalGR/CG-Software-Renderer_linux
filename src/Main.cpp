@@ -556,10 +556,7 @@ void initScene() {
 void initGraphics(int argc, char *argv[], GLFWwindow *&window)
 {
 	// Initialize GLFW
-	if (!glfwInit()) {
-		std::cerr << "GLFW initialization failed" << std::endl;
-		exit(1);
-	}
+	assert_m(glfwInit(), "GLFW initialization failed");
 	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 	assert_m(!monitor, "GLFW get primary monitor failed");
 	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
