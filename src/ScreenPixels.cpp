@@ -1,7 +1,5 @@
 #include "ScreenPixels.h"
 
-#ifdef SCREEN_PIXELS_IMPLEMENT_BUFFER
-
 ScreenPixels::ScreenPixels() {
 	width_ = 0;
 	height_ = 0;
@@ -58,4 +56,12 @@ void ScreenPixels::resize(size_t width, size_t height) {
 	reserve(width, height);
 }
 
-#endif
+void ScreenPixels::resize_pending(size_t width, size_t height) {
+	width_pending_ = width;
+	height_pending_ = height;
+	pending_ = true;
+}
+
+void ScreenPixels::sync() {
+	if (pending_) this->resize(width_pending_, height_pending_);
+}

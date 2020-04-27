@@ -1,9 +1,7 @@
-SCREEN_PIXELS_IMPLEMENTATION = SCREEN_PIXELS_IMPLEMENT_BUFFER
-
 MODE ?= release
 
 CC = g++
-CXXFLAGS = -std=c++14 -Wall -Isrc -D$(SCREEN_PIXELS_IMPLEMENTATION)
+CXXFLAGS = -std=c++14 -Wall -Isrc
 LDFLAGS = -Wl,-rpath,$$ORIGIN:$$PWD:. -lX11
 
 ifeq ($(MODE),debug)

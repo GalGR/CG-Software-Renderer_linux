@@ -149,9 +149,7 @@ void Draw::drawScene(
 		normals_color
 	);
 
-#ifdef SCREEN_PIXELS_IMPLEMENT_BUFFER
 	renderer.drawScreenPixels(pixels);
-#endif
 }
 
 void Draw::calcScene(
@@ -184,12 +182,6 @@ void Draw::calcScene(
 		pixels,
 		screen
 	);
-#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
-	// Render the pixels
-	if (pixels.size() > 0) {
-		renderer.drawPixels(pixels);
-	}
-#endif
 
 	// Render the pixels and return if there is no object to render
 	if (object.meshModel().vertices.size() == 0) return;
@@ -205,12 +197,6 @@ void Draw::calcScene(
 		pixels,
 		screen
 	);
-#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
-	// Render the pixels
-	if (pixels.size() > 0) {
-		renderer.drawPixels(pixels);
-	}
-#endif
 
 	// Model-View-Projection matrix transformation (for object-bound entities)
 	trans = trans * object.model;
@@ -229,12 +215,6 @@ void Draw::calcScene(
 		screen,
 		obj_color
 	);
-#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
-	// Render the pixels
-	if (pixels.size() > 0) {
-		renderer.drawPixels(pixels);
-	}
-#endif
 
 	// Draw the bounding box
 	pixels.clear();
@@ -246,12 +226,6 @@ void Draw::calcScene(
 		screen,
 		bbox_color
 	);
-#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
-	// Render the pixels
-	if (pixels.size() > 0) {
-		renderer.drawPixels(pixels);
-	}
-#endif
 
 	// Draw the vertex normals
 	pixels.clear();
@@ -265,12 +239,6 @@ void Draw::calcScene(
 		object.normals_length,
 		normals_color
 	);
-#ifdef SCREEN_PIXELS_IMPLEMENT_LIST
-	// Render the pixels
-	if (pixels.size() > 0) {
-		renderer.drawPixels(pixels);
-	}
-#endif
 }
 
 int iteration = 0;
