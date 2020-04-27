@@ -771,7 +771,6 @@ void performAction(Action action, bool press) {
 			else { // Switch to normal cursor mode
 				mouse.normal(); // Make the cursor visible
 			}
-			mouse.update_rest(screen.mid_point());
 			state[Action::MOUSE_LOOK].toggle();
 			state[Action::OBJ_ROTATE] = false;
 			state[Action::FPS_CAMERA] = false;
