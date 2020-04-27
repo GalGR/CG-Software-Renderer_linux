@@ -23,7 +23,7 @@ public:
 	//	const Vertices &vertices,
 	//	const Polygons &polygons,
 	//	const Matrix4 &proj,
-	//	DrawBuffers &polygons_buffer,
+	//	DrawBuffer &polygons_buffer,
 	//	ScreenPixels &pixels,
 	//	const ScreenState &screen
 	//);
@@ -44,7 +44,7 @@ public:
 	static void calcProjection(
 		const Vertices &vertices,
 		const Matrix4 &trans,
-		DrawBuffers &draw_buffers,
+		DrawBuffer &draw_buffers,
 		const ScreenState &screen
 	);
 	static void drawScene(
@@ -52,10 +52,10 @@ public:
 		const Object &object,
 		const Lighting &lighting,
 		ShadingEnum shading_mode,
-		DrawBuffers &mesh_buffers,
-		DrawBuffers &bbox_buffers,
-		DrawBuffers &normals_buffers,
-		DrawBuffers &axes_buffers,
+		DrawBuffer &mesh_buffers,
+		DrawBuffer &bbox_buffers,
+		DrawBuffer &normals_buffers,
+		DrawBuffer &axes_buffers,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		bool draw_bounding_box = false,
@@ -71,10 +71,10 @@ public:
 		const Object &object,
 		const Lighting &lighting,
 		ShadingEnum shading_mode,
-		DrawBuffers &mesh_buffers,
-		DrawBuffers &bbox_buffers,
-		DrawBuffers &normals_buffers,
-		DrawBuffers &axes_buffers,
+		DrawBuffer &mesh_buffers,
+		DrawBuffer &bbox_buffers,
+		DrawBuffer &normals_buffers,
+		DrawBuffer &axes_buffers,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		bool draw_bounding_box = false,
@@ -91,8 +91,8 @@ public:
 		const Lighting &lighting,
 		ShadingEnum shading_mode,
 		const Matrix4 &trans,
-		DrawBuffers &mesh_buffers,
-		DrawBuffers &normals_buffers,
+		DrawBuffer &mesh_buffers,
+		DrawBuffer &normals_buffers,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		Color color = WHITE
@@ -100,7 +100,7 @@ public:
 	static void calcBoundingBox(
 		const BoundingBox &bBox,
 		const Matrix4 &trans,
-		DrawBuffers &bbox_buffers,
+		DrawBuffer &bbox_buffers,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		Color color = BLUE
@@ -108,8 +108,8 @@ public:
 	static void calcVertexNormals(
 		const MeshModel &meshModel,
 		const Matrix4 &trans,
-		DrawBuffers &mesh_buffers,
-		DrawBuffers &normals_buffers,
+		DrawBuffer &mesh_buffers,
+		DrawBuffer &normals_buffers,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		double length = 1.0,
@@ -117,7 +117,7 @@ public:
 	);
 	static void calcAxes(
 		const Matrix4 &trans,
-		DrawBuffers &axes_buffers,
+		DrawBuffer &axes_buffers,
 		ScreenPixels &pixels,
 		const ScreenState &screen,
 		double length = 3.0, // Length for the axes

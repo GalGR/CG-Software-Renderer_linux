@@ -51,12 +51,12 @@ template <typename Vertices>
 void Draw::calcProjection(
 	const Vertices &vertices,
 	const Matrix4 &trans,
-	DrawBuffers &draw_buffers,
+	DrawBuffer &draw_buffers,
 	const ScreenState &screen
 ) {
-	DrawBuffers::NeedDraw &need_draw = draw_buffers.need_draw;
-	DrawBuffers::Points3D &points_3d = draw_buffers.points_3d;
-	DrawBuffers::Points2D &points_2d = draw_buffers.points_2d;
+	DrawBuffer::NeedDraw &need_draw = draw_buffers.need_draw;
+	DrawBuffer::Points3D &points_3d = draw_buffers.points_3d;
+	DrawBuffer::Points2D &points_2d = draw_buffers.points_2d;
 
 	// Transform each 3D point and clip the coordinates outside the normalized box
 	size_t numPoints = vertices.size();
@@ -111,10 +111,10 @@ void Draw::drawScene(
 	const Object &object,
 	const Lighting &lighting,
 	ShadingEnum shading_mode,
-	DrawBuffers &mesh_buffers,
-	DrawBuffers &bbox_buffers,
-	DrawBuffers &normals_buffers,
-	DrawBuffers &axes_buffers,
+	DrawBuffer &mesh_buffers,
+	DrawBuffer &bbox_buffers,
+	DrawBuffer &normals_buffers,
+	DrawBuffer &axes_buffers,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	bool draw_bounding_box,
@@ -159,10 +159,10 @@ void Draw::calcScene(
 	const Object &object,
 	const Lighting &lighting,
 	ShadingEnum shading_mode,
-	DrawBuffers &mesh_buffers,
-	DrawBuffers &bbox_buffers,
-	DrawBuffers &normals_buffers,
-	DrawBuffers &axes_buffers,
+	DrawBuffer &mesh_buffers,
+	DrawBuffer &bbox_buffers,
+	DrawBuffer &normals_buffers,
+	DrawBuffer &axes_buffers,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	bool draw_bounding_box,
@@ -281,15 +281,15 @@ void Draw::calcObject(
 	const Lighting &lighting,
 	ShadingEnum shading_mode,
 	const Matrix4 &trans,
-	DrawBuffers &mesh_buffers,
-	DrawBuffers &normals_buffers,
+	DrawBuffer &mesh_buffers,
+	DrawBuffer &normals_buffers,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	Color color
 ) {
-	DrawBuffers::NeedDraw &need_draw = mesh_buffers.need_draw;
-	DrawBuffers::Points3D &points_3d = mesh_buffers.points_3d;
-	DrawBuffers::Points2D &points_2d = mesh_buffers.points_2d;
+	DrawBuffer::NeedDraw &need_draw = mesh_buffers.need_draw;
+	DrawBuffer::Points3D &points_3d = mesh_buffers.points_3d;
+	DrawBuffer::Points2D &points_2d = mesh_buffers.points_2d;
 
 	const MeshModel &meshModel = object.meshModel();
 
@@ -364,14 +364,14 @@ void Draw::calcObject(
 void Draw::calcBoundingBox(
 	const BoundingBox &bBox,
 	const Matrix4 &trans,
-	DrawBuffers &bbox_buffers,
+	DrawBuffer &bbox_buffers,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	Color color
 ) {
-	DrawBuffers::NeedDraw &need_draw = bbox_buffers.need_draw;
-	DrawBuffers::Points3D &points_3d = bbox_buffers.points_3d;
-	DrawBuffers::Points2D &points_2d = bbox_buffers.points_2d;
+	DrawBuffer::NeedDraw &need_draw = bbox_buffers.need_draw;
+	DrawBuffer::Points3D &points_3d = bbox_buffers.points_3d;
+	DrawBuffer::Points2D &points_2d = bbox_buffers.points_2d;
 
 	// Calculate the bounding box vertices
 	std::array<Vector4, 8> boxVertices = bBox.calcBoxVertices();
@@ -454,8 +454,8 @@ void Draw::calcBoundingBox(
 void Draw::calcVertexNormals(
 	const MeshModel &meshModel,
 	const Matrix4 &trans,
-	DrawBuffers &mesh_buffers,
-	DrawBuffers &normals_buffers,
+	DrawBuffer &mesh_buffers,
+	DrawBuffer &normals_buffers,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	double length,
@@ -481,7 +481,7 @@ void Draw::calcVertexNormals(
 
 void Draw::calcAxes(
 	const Matrix4 &trans,
-	DrawBuffers &axes_buffers,
+	DrawBuffer &axes_buffers,
 	ScreenPixels &pixels,
 	const ScreenState &screen,
 	double length,
@@ -512,7 +512,7 @@ void Draw::calcAxes(
 //	const Vertices &vertices,
 //	const Polygons &polygons,
 //	const Matrix4 &proj,
-//	DrawBuffers &polygons_buffer,
+//	DrawBuffer &polygons_buffer,
 //	ScreenPixels &pixels,
 //	const ScreenState &screen
 //) {

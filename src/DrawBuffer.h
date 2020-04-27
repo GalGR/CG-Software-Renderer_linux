@@ -1,6 +1,6 @@
 #pragma once
 
-struct DrawBuffers {
+struct DrawBuffer {
 	typedef std::vector<bool> NeedDraw;
 	typedef std::vector<Vector3> Points3D;
 	typedef std::vector<PointI> Points2D;

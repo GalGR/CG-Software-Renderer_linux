@@ -133,16 +133,16 @@ Camera &camera = scene.camera;
 Lighting &lighting = scene.lighting;
 
 // Mesh draw buffers
-DrawBuffers mesh_buffers;
+DrawBuffer mesh_buffers;
 
 // Bounding Box draw buffers
-DrawBuffers bbox_buffers;
+DrawBuffer bbox_buffers;
 
 // Normals draw buffers
-DrawBuffers normals_buffers;
+DrawBuffer normals_buffers;
 
 // World/Object axes draw buffers
-DrawBuffers axes_buffers;
+DrawBuffer axes_buffers;
 
 // Pixels screen buffer
 ScreenPixels pixels;
