@@ -374,9 +374,11 @@ void initObject() {
 
 void initVariables() {
 	// Add light sources
+	if (lighting.size() < 3) {
 		lighting.push_back(AmbientLight(AMBIENT_LIGHT_INTENSITY));
 		lighting.push_back(PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY));
 		lighting.push_back(PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY));
+	}
 
 	// Reserve the number of pixels
 	list_pixels.clear();
