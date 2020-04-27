@@ -113,9 +113,6 @@ UINT32 render_elapsed_us;
 // Elapsed control loop time
 UINT32 control_elapsed_us;
 
-double g_Scale = 1.0;
-//double g_quaternion[4] = {0.0, 0.0, 0.0, 1.0};
-
 // Color
 Color color = WHITE;
 
