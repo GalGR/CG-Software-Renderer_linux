@@ -1,5 +1,10 @@
 #pragma once
 
+#include <array>
+
+// Current DrawBuffers mesh_buffer, bbox_buffer, normals_buffer, axes_buffer
+#define NUM_DRAW_BUFFERS 4
+
 struct DrawBuffer {
 	typedef std::vector<bool> NeedDraw;
 	typedef std::vector<Vector3> Points3D;
@@ -9,26 +14,37 @@ struct DrawBuffer {
 	Points3D points_3d;
 	Points2D points_2d;
 
-	void clear_reserve_resize(size_t reserveAmount) {
+	void resize(size_t reserveAmount) {
 		// Reserve the number of points
-		need_draw.clear();
-		if (need_draw.capacity() < reserveAmount) need_draw.reserve(reserveAmount);
-		need_draw.resize(reserveAmount);
+		if (reserveAmount > need_draw.size()) need_draw.resize(reserveAmount);
 
 		// Reserve the number of 3D points
-		points_3d.clear();
-		if (points_3d.capacity() < reserveAmount) points_3d.reserve(reserveAmount);
-		points_3d.resize(reserveAmount);
+		if (reserveAmount > points_3d.size()) points_3d.resize(reserveAmount);
 
 		// Reserve the number of 2D points
-		points_2d.clear();
-		if (points_2d.capacity() < reserveAmount) points_2d.reserve(reserveAmount);
-		points_2d.resize(reserveAmount);
+		if (reserveAmount > points_2d.size()) points_2d.resize(reserveAmount);
 	}
 };
 
-struct DrawBuffers {
-	struct {
-		DrawBuffer mesh_buffer
+struct DrawBufferArr {
+	union {
+		struct {
+			DrawBuffer mesh_buffer;
+			DrawBuffer bbox_buffer;
+			DrawBuffer normals_buffer;
+			DrawBuffer axes_buffer;
+			// Update NUM_DRAW_BUFFERS if adding more DrawBuffers
+		};
+		std::array<DrawBuffer, NUM_DRAW_BUFFERS> buffers;
 	};
+
+	inline const DrawBuffer &operator [](size_t i) const { return this->buffers[i]; }
+	inline DrawBuffer &operator [](size_t i) { return this->buffers[i]; }
+
+	void resize(size_t reserveAmount) {
+		size_t numBuffers = this->buffers.size();
+		for (size_t i = 0; i < numBuffers; ++i) {
+			this->buffers[i].resize(reserveAmount);
+		}
+	}
 };

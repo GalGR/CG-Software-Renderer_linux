@@ -250,10 +250,10 @@ int main(int argc, char *argv[])
 	initTweakBar();
 
 	// Reserve the bounding box buffers
-	bbox_buffer.clear_reserve_resize(BOUNDING_BOX_VERTICES);
+	bbox_buffer.resize(BOUNDING_BOX_VERTICES);
 
 	// Reserve the world axes buffers
-	axes_buffer.clear_reserve_resize(WORLD_AXES_VERTICES);
+	axes_buffer.resize(WORLD_AXES_VERTICES);
 
 
 	// GLFW main loop
@@ -511,10 +511,10 @@ void initScene() {
 	size_t numVertexNormals = numPoints;
 
 	// Reserve the mesh buffers
-	mesh_buffer.clear_reserve_resize(numPoints);
+	mesh_buffer.resize(numPoints);
 
 	// Reserve the normals buffers
-	normals_buffer.clear_reserve_resize(numVertexNormals);
+	normals_buffer.resize(numVertexNormals);
 
 	// Initialize the object
 	initObject();
