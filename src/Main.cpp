@@ -381,8 +381,6 @@ void initVariables() {
 	}
 
 	// Reserve the number of pixels
-	list_pixels.clear();
-	if (list_pixels.capacity() < (size_t)(screen.x * screen.y)) list_pixels.reserve(screen.x * screen.y);
 	pixels.resize(screen.x, screen.y);
 
 	// Initialize the camera motion
@@ -564,7 +562,6 @@ void initGraphics(int argc, char *argv[], GLFWwindow *&window)
 static inline void drawScene()
 {
 	Draw::drawScene(
-		list_pixels,
 		camera,
 		object,
 		lighting,
@@ -634,9 +631,6 @@ void window_size_callback(int width, int height)
 	// Update the screen dimensions
 	screen.x = width;
 	screen.y = height;
-
-	// Reserve the number of pixels
-	if (list_pixels.capacity() < (size_t)(screen.x * screen.y)) list_pixels.reserve(screen.x * screen.y);
 
 	// Update the screen pixels buffer
 	pixels.resize(screen.x, screen.y);
