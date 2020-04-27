@@ -12,7 +12,7 @@
 #include "Camera.h"
 #include "Object.h"
 #include "Light.h"
-#include "Draw.h"
+#include "DrawBuffer.h"
 #include "Color.h"
 
 struct Variables {

@@ -25,6 +25,7 @@
 #include <tuple>
 
 #include "Draw.h"
+#include "DrawBuffer.h"
 #include "ScreenPixels.h"
 
 #include "Vector4.h"
