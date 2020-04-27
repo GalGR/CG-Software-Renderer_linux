@@ -506,7 +506,7 @@ void initScene() {
 	// Import the new object
 	object = Object(objScene);
 
-	size_t numPoints = object.meshModel.vertices.size();
+	size_t numPoints = object.meshModel().vertices.size();
 	size_t numVertexNormals = numPoints;
 
 	// Reserve the mesh buffers
