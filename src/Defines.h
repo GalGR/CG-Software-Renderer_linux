@@ -10,8 +10,8 @@ static inline int in_range(int p, int lo, int hi) {
 #define GO_ACCEL 0.01
 #define STOP_ACCEL -0.08
 #define WORLD_AXES_VERTICES 4
-#define START_PIXELS_WIDTH 8'000
-#define START_PIXELS_HEIGHT 8'000
+#define START_PIXELS_WIDTH 4'000
+#define START_PIXELS_HEIGHT 4'000
 #define START_PIXELS (START_PIXELS_WIDTH * START_PIXELS_HEIGHT)
 #define CAMERA_N 0.001
 #define CAMERA_F 10'000.0
@@ -46,3 +46,13 @@ static inline int in_range(int p, int lo, int hi) {
 #define INITIAL_LIGHT1_MODE INITIAL_LIGHTING_MODE
 #define INITIAL_LIGHT2_MODE INITIAL_LIGHTING_MODE
 #define INITIAL_SHADING_MODE SHADING_GOURAUD
+
+#define FRAME_HERTZ 60
+
+#define FRAME_S (1.0 / FRAME_HERTZ)
+#define FRAME_MS (FRAME_S * 1'000.0)
+#define FRAME_MS_I ((int64_t)FRAME_MS)
+#define FRAME_US (FRAME_S * 1'000'000.0)
+#define FRAME_US_I ((int64_t)FRAME_US)
+#define FRAME_NS (FRAME_S * 1'000'000'000.0)
+#define FRAME_NS_I ((int64_t)FRAME_NS)
