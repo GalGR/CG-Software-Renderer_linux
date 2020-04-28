@@ -2,6 +2,7 @@
 
 #include <array>
 #include <mutex>
+#include "Pack.h"
 
 // Current DrawBuffers mesh_buffer, bbox_buffer, normals_buffer, axes_buffer
 #define NUM_DRAW_BUFFERS 4
@@ -55,14 +56,14 @@ public:
 
 struct DrawBufferArr {
 	union {
-		struct {
+		PACK(struct {
 			DrawBuffer mesh_buffer;
 			DrawBuffer normals_buffer;
 			DrawBuffer bbox_buffer;
 			DrawBuffer axes_buffer;
 			// Update NUM_DRAW_BUFFERS if adding more DrawBuffers
-		};
-		std::array<DrawBuffer, NUM_DRAW_BUFFERS> buffers;
+		});
+		DrawBuffer buffers[NUM_DRAW_BUFFERS];
 	};
 
 private:
@@ -75,8 +76,7 @@ public:
 	inline DrawBuffer &operator [](size_t i) { return this->buffers[i]; }
 
 	void resize(size_t reserveAmount) {
-		size_t numBuffers = this->buffers.size();
-		for (size_t i = 0; i < numBuffers; ++i) {
+		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
 			this->buffers[i].resize(reserveAmount);
 		}
 	}
@@ -85,8 +85,7 @@ public:
 	void resize_pending(size_t reserveAmount) {
 		mutex_.lock();
 		{
-			size_t numBuffers = this->buffers.size();
-			for (size_t i = 0; i < numBuffers; ++i) {
+			for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
 				this->buffers[i].resize_pending(reserveAmount);
 			}
 			pending_ = true;
