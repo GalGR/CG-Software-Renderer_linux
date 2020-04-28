@@ -5,6 +5,7 @@
 #include <vector>
 #include <assert.h>
 #include <math.h>
+#include <mutex>
 
 #define SCREEN_PIXELS_DEFAULT_RESERVE_WIDTH 6'000
 #define SCREEN_PIXELS_DEFAULT_RESERVE_HEIGHT 6'000
@@ -19,9 +20,11 @@ class ScreenPixels {
 	size_t height_;
 	size_t reserve_width_;
 	size_t reserve_height_;
+
 	size_t width_pending_;
 	size_t height_pending_;
-	bool pending_;
+	bool pending_ = false;
+	std::mutex mutex_;
 
 public:
 	ScreenPixels();

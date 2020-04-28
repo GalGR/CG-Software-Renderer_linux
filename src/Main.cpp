@@ -275,11 +275,12 @@ int main(int argc, char *argv[])
 	for (std::thread *thrd : { &thrd_control_loop, &thrd_render_loop }) {
 		thrd->join();
 	}
-	wait_threads({ &thrd_control_loop, &thrd_render_loop });
 
 	return 0;
 }
 
+// Polls events and run the relevant callbacks
+// Must be called from the main thread (where GLFW was initialized)
 void event_loop() {
 	while (glfwWindowShouldClose(window)) {
 		// Handle events (e.g. mouse movement, window resize)
@@ -291,19 +292,23 @@ void event_loop() {
 	is_exit = true;
 }
 
+// Syncs the variables and renders a frame
 void render_loop() {
-	// GLFW render loop
 	while (!is_exit) {
-
+		
 
 		// Render the window
 		display();
 	}
 }
 
+// The logic of the program, updates all the variables
 void control_loop(const int &frame_number) {
 	while(!is_exit) {
-		assert(0); // TODO: add some code
+		
+
+		// Sleep for one frame
+		std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
 	}
 }
 
