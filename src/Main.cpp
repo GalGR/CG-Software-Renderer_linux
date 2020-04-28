@@ -247,9 +247,6 @@ int main(int argc, char *argv[])
 
 	// Set GLFW callbacks
 	initCallbacks();
-	glutDisplayFunc(display);
-
-	glutTimerFunc(time_frame_ms, control_loop, frame_number); // Timer callback function
 
 	// Teminates AntTweakBar and GLFW on program exit
 	atexit(terminate);
