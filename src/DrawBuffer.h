@@ -64,6 +64,7 @@ struct DrawBufferArr {
 		};
 		std::array<DrawBuffer, NUM_DRAW_BUFFERS> buffers;
 	};
+
 private:
 	size_t reserveAmount_pending_;
 	bool pending_ = false;
