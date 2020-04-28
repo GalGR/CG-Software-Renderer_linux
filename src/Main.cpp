@@ -6,6 +6,7 @@
 #include <plf_nanotimer/plf_nanotimer.h>
 
 #include <thread>
+#include <chrono>
 #include <vector>
 #if defined(_WIN32)
 #include <Windows.h>
@@ -23,6 +24,7 @@
 
 #include <map>
 #include <tuple>
+#include <initializer_list>
 
 #include "Draw.h"
 #include "DrawBuffer.h"
@@ -73,9 +75,9 @@ MouseBind mouseBind;
 ToggleMap<Action> state;
 
 // State variables
-size_t time_frame_ms = 16;
 size_t frame_number = 0;
 Mouse mouse;
+bool is_exit;
 
 
 // Lighting mode enum
@@ -164,11 +166,15 @@ Color normals_color = YELLOW;
 // Material
 Material material;
 
-void assert_m(const bool expr, const char *err) {
+static void assert_m(const bool expr, const char *err) {
 	if (!expr) {
 		std::cerr << err << std::endl;
 		exit(1);
 	}
+}
+
+static inline void sleep_frame() {
+	std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
 }
 
 void TW_CALL loadOBJModel(void* clientData);
@@ -196,7 +202,6 @@ void loadMaterial();
 void initObject();
 void initVariables();
 void initKeybindings();
-void control_loop(int value);
 void performAction(Action action, bool press);
 void update_motion(Motion &motion,
 	Action left, Action right,
@@ -209,8 +214,14 @@ void TW_CALL setLight2Mode(const void *value, void *clientData) { setLightMode(2
 void TW_CALL getLight1Mode(void *value, void *clientData) { *(LightingEnum*)value = light1_mode; }
 void TW_CALL getLight2Mode(void *value, void *clientData) { *(LightingEnum*)value = light2_mode; }
 
+void render_loop();
+void control_loop(const int &value);
+void event_loop();
+
+
 int main(int argc, char *argv[])
 {
+	is_exit = false;
 	std::atexit(terminate);
 
 	// Get the number of hardware supported parallel threads
@@ -250,20 +261,50 @@ int main(int argc, char *argv[])
 	initTweakBar();
 
 	// Reserve the bounding box buffers
-	bbox_buffer.resize(BOUNDING_BOX_VERTICES);
+	bbox_buffer.resize_pending(BOUNDING_BOX_VERTICES);
 
 	// Reserve the world axes buffers
-	axes_buffer.resize(WORLD_AXES_VERTICES);
+	axes_buffer.resize_pending(WORLD_AXES_VERTICES);
 
 
-	// GLFW main loop
-	while (glfwWindowShouldClose(window)) {
+	std::thread thrd_control_loop(control_loop, std::cref(frame_number));
+	std::thread thrd_render_loop(render_loop);
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+	event_loop(); // Must run from the main thread
+
+	for (std::thread *thrd : { &thrd_control_loop, &thrd_render_loop }) {
+		thrd->join();
 	}
+	wait_threads({ &thrd_control_loop, &thrd_render_loop });
 
 	return 0;
+}
+
+void event_loop() {
+	while (glfwWindowShouldClose(window)) {
+		// Handle events (e.g. mouse movement, window resize)
+		glfwPollEvents();
+
+		// Sleep for one frame
+		std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
+	}
+	is_exit = true;
+}
+
+void render_loop() {
+	// GLFW render loop
+	while (!is_exit) {
+
+
+		// Render the window
+		display();
+	}
+}
+
+void control_loop(const int &frame_number) {
+	while(!is_exit) {
+		assert(0); // TODO: add some code
+	}
 }
 
 void initCallbacks() {
@@ -382,7 +423,7 @@ void initVariables() {
 	}
 
 	// Reserve the number of pixels
-	pixels.resize(screen.x, screen.y);
+	pixels.resize_pending(screen.x, screen.y);
 
 	// Initialize the camera motion
 	cam_motion = Motion(GO_ACCEL, STOP_ACCEL, MAX_ACCEL, MAX_VELOC);
@@ -511,10 +552,10 @@ void initScene() {
 	size_t numVertexNormals = numPoints;
 
 	// Reserve the mesh buffers
-	mesh_buffer.resize(numPoints);
+	mesh_buffer.resize_pending(numPoints);
 
 	// Reserve the normals buffers
-	normals_buffer.resize(numVertexNormals);
+	normals_buffer.resize_pending(numVertexNormals);
 
 	// Initialize the object
 	initObject();
@@ -597,34 +638,30 @@ void glUseScreenCoordinates(int width, int height)
 }
 
 
-// Callback function called by GLUT to render screen
+// Render screen
 void display()
 {
-//  	static int counter = 0;
-//  	std::cout << "C: " << counter << std::endl;
-//  	counter++;
-
 	glClearColor(0, 0, 0, 1); //background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//time measuring - don't delete
+	// Render time measure -- start
 	render_timer.start();
 
 	drawScene();
 
-	//time measuring - don't delete
+	// Render time measure -- end
 	render_elapsed_us = static_cast<UINT32>(render_timer.get_elapsed_us());
 
 	// Draw tweak bars
 	TwDraw();
 
 	//swap back and front frame buffers
-	glutSwapBuffers();
+	glfwSwapBuffers(window);
 	++frame_number;
 }
 
 
-// Callback function called by GLUT when window size changes
+// Callback function called by GLFW when window size changes
 void window_size_callback(int width, int height)
 {
 	glUseScreenCoordinates(width, height);
@@ -634,7 +671,7 @@ void window_size_callback(int width, int height)
 	screen.y = height;
 
 	// Update the screen pixels buffer
-	pixels.resize(screen.x, screen.y);
+	pixels.resize_pending(screen.x, screen.y);
 
 	// Update the mouse rest position
 	mouse.update_rest(screen.mid_point());
@@ -863,7 +900,7 @@ void update_motion(Motion &motion,
 	else motion.stop_down();
 }
 
-void control_loop(int value) {
+void control_loop(const int &value) {
 	// Measure the time it takes to do the main control loop
 	control_timer.start();
 

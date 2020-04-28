@@ -37,6 +37,10 @@ struct DrawBufferArr {
 		};
 		std::array<DrawBuffer, NUM_DRAW_BUFFERS> buffers;
 	};
+private:
+	size_t reserveAmount_pending_;
+	bool pending_;
+public:
 
 	inline const DrawBuffer &operator [](size_t i) const { return this->buffers[i]; }
 	inline DrawBuffer &operator [](size_t i) { return this->buffers[i]; }
@@ -46,5 +50,14 @@ struct DrawBufferArr {
 		for (size_t i = 0; i < numBuffers; ++i) {
 			this->buffers[i].resize(reserveAmount);
 		}
+	}
+
+	// Sync functions
+	void resize_pending(size_t reserveAmount) {
+		reserveAmount_pending_ = reserveAmount;
+		pending_ = true;
+	}
+	void sync() {
+		this->resize(reserveAmount_pending_);
 	}
 };
