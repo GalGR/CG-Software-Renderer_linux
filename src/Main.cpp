@@ -104,8 +104,6 @@ GLFWwindow *window = NULL;
 
 // Screen dimensions
 ScreenState screen = { START_WIDTH, START_HEIGHT };
-//size_t g_width = START_WIDTH;
-//size_t g_height = START_HEIGHT;
 
 // Render timer
 plf::nanotimer render_timer;
@@ -182,17 +180,12 @@ void initScene();
 void initGraphics(int argc, char *argv[]);
 static inline void drawScene();
 void display();
-void window_size_callback(int width, int height);
+void window_size_callback(GLFWwindow *window, int width, int height);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 void cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-void PassiveMouseMotion(int x, int y);
-void KeyboardDown(unsigned char k, int x, int y);
-void SpecialDown(int k, int x, int y);
+void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void terminate(void);
-
-void KeyboardUp(unsigned char k, int x, int y);
-void SpecialUp(int k, int x, int y);
 
 void initCallbacks();
 void initTweakBar();
@@ -664,19 +657,15 @@ void display()
 
 
 // Callback function called by GLFW when window size changes
-void window_size_callback(int width, int height)
+void window_size_callback(GLFWwindow *window, int width, int height)
 {
 	glUseScreenCoordinates(width, height);
 
 	// Update the screen dimensions
-	screen.x = width;
-	screen.y = height;
+	screen.resize_pending(width, height);
 
 	// Update the screen pixels buffer
 	pixels.resize_pending(screen.x, screen.y);
-
-	// Update the mouse rest position
-	mouse.update_rest(screen.mid_point());
 
 	// Update the camera projections
 	camera.aspect_ratio = screen.aspect_ratio();
@@ -711,48 +700,18 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 	TwEventScrollGLFW3(window, xoffset, yoffset);
 }
 
-void KeyboardDown(unsigned char k, int x, int y)
-{
-	TwEventKeyboardGLUT(k, x, y);
+void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+	TwEventKeyGLFW3(window, key, scancode, action, mods);
 
-	// Lower case the character
-	k = tolower(k);
-	
-	keyAlpPress.press(k);
-
-	//glutPostRedisplay();
+	switch (action) {
+	case GLFW_PRESS:
+		keyboardPress.press(key);
+		break;
+	case GLFW_RELEASE:
+		keyboardPress.release(key);
+		break;
+	}
 }
-
-void KeyboardUp(unsigned char k, int x, int y)
-{
-	TwEventKeyboardGLUT(k, x, y);
-
-	// Lower case the character
-	k = tolower(k);
-
-	keyAlpPress.release(k);
-
-	//glutPostRedisplay();
-}
-
-void SpecialDown(int k, int x, int y)
-{
-	TwEventKeyboardGLUT(k, x, y);
-
-	keySplPress.press(k);
-
-	//glutPostRedisplay();
-}
-
-void SpecialUp(int k, int x, int y)
-{
-	TwEventKeyboardGLUT(k, x, y);
-
-	keySplPress.release(k);
-
-	//glutPostRedisplay();
-}
-
 
 // Function called at exit
 void terminate(void)
@@ -856,7 +815,6 @@ void performAction(Action action, bool press) {
 			else { // Switch to normal cursor mode
 				mouse.normal(); // Make the cursor visible
 			}
-			mouse.update_rest(screen.mid_point());
 			state[Action::MOUSE_LOOK] = false;
 			state[Action::OBJ_ROTATE] = false;
 			state[Action::FPS_CAMERA].toggle();
@@ -978,9 +936,6 @@ void control_loop(const int &value) {
 		else if (state[Action::MOUSE_LOOK]) { // Free view
 			camera.rot = camera.rot * rotY * rotX;
 		}
-
-		// Reset the mouse position to the middle of the screen
-		glutWarpPointer(screen.mid_x_int(), screen.mid_y_int()); // Set the cursor to the middle of the screen
 	}
 	else if (state[Action::OBJ_ROTATE]) {
 		if (state[Action::OBJ_CONTROL_MODEL]) {
