@@ -12,9 +12,7 @@
 #include "ScreenPixels.h"
 #include "Light.h"
 #include "DrawBuffer.h"
-
-// Shading mode enum
-typedef enum { SHADING_WIRE, SHADING_FLAT, SHADING_GOURAUD, SHADING_PHONG, SHADING_FLAT_TEST, SHADING_GOURAUD_TEST, NUM_OF_SHADERS } ShadingEnum;
+#include "ShadingEnum.h"
 
 class Draw {
 public:

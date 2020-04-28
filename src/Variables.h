@@ -13,6 +13,7 @@
 #include "Object.h"
 #include "Light.h"
 #include "DrawBuffer.h"
+#include "ShadingEnum.h"
 #include "Color.h"
 
 struct Variables {
@@ -30,4 +31,14 @@ struct Variables {
 	Color obj_color = WHITE;
 	Color bbox_color = BLUE;
 	Color normals_color = YELLOW;
+	// Line Color
+	Color color = WHITE;
+	// Camera motion
+	Motion cam_motion;
+	// Object motion
+	Motion obj_motion;
+	// Object scale
+	Motion obj_scale_motion; // Only use the x coordinate
+	// Material
+	Material material;
 };
