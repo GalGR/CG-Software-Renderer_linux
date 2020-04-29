@@ -3,7 +3,6 @@
 #include <map>
 #include <queue>
 #include <tuple>
-#include <mutex>
 
 #include "TypeDefVal.h"
 
@@ -43,113 +42,58 @@ private:
 	KeyPressMap *currMap = &pressMaps[0];
 	std::array<KeyPressMap, 2> pressMaps;
 	KeyPressList pressList;
-	std::mutex mutex_;
 
 public:
 	bool atKey(const Key_T &key) const {
-		bool val;
-		mutex_.lock();
-		{
-			val = (*this->currMap)[key];
-		}
-		mutex_.unlock();
-		return val;
+		return (*this->currMap)[key];
 	}
 	const KeyAndPress &operator [](size_t i) const {
-		const KeyAndPress *key_and_press;
-		mutex_.lock();
-		{
-			key_and_press = &(this->pressList[i]);
-		}
-		mutex_.unlock();
-		return *key_and_press;
+		return this->pressList[i];
 	}
 
 	void press(const Key_T &key) {
-		mutex_.lock();
-		{
-			(*this->currMap)[key] = true;
-			KeyAndPress tuple = KeyAndPress{ key, true };
-			/*int i = find(tuple);
-			if (i < 0) */this->pressList.push(tuple);
-		}
-		mutex_.unlock();
+		(*this->currMap)[key] = true;
+		KeyAndPress tuple = KeyAndPress{ key, true };
+		/*int i = find(tuple);
+		if (i < 0) */this->pressList.push(tuple);
 	}
 	void release(const Key_T &key) {
-		mutex_.lock();
-		{
-			(*this->currMap)[key] = false;
-			KeyAndPress tuple = KeyAndPress{ key, false };
-			/*int i = find(tuple);
-			if (i < 0) */this->pressList.push(tuple);
-		}
-		mutex_.unlock();
+		(*this->currMap)[key] = false;
+		KeyAndPress tuple = KeyAndPress{ key, false };
+		/*int i = find(tuple);
+		if (i < 0) */this->pressList.push(tuple);
 	}
 
 	bool press_edge(const Key_T &key) {
-		bool edge;
-		mutex_.lock();
-		{
-			edge = (*this->currMap)[key] && !(*this->prevMap)[key];
-		}
-		mutex_.unlock();
-		return edge;
+		return (*this->currMap)[key] && !(*this->prevMap)[key];
 	}
 	bool release_edge(const Key_T &key) {
-		bool edge;
-		mutex_.lock();
-		{
-			edge = !(*this->currMap)[key] && (*this->prevMap)[key];
-		}
-		mutex_.unlock();
-		return edge;
+		return !(*this->currMap)[key] && (*this->prevMap)[key];
 	}
 
 	void clear() {
-		mutex_.lock();
-		{
-			this->prevMap->clear();
-			this->currMap->clear();
-			//this->pressList.clear();
-			this->pressList = KeyPressList();
-		}
-		mutex_.unlock();
+		this->prevMap->clear();
+		this->currMap->clear();
+		//this->pressList.clear();
+		this->pressList = KeyPressList();
 	}
 
 	void clear_list() {
-		mutex_.lock();
-		{
-			this->pressList = KeyPressList();
-		}
-		mutex_.unlock();
+		this->pressList = KeyPressList();
 	}
 
 	bool hasNext() {
-		bool has_next;
-		mutex_.lock();
-		{
-			has_next = !pressList.empty();
-		}
-		mutex_.unlock();
-		return has_next;
+		return !pressList.empty();
 	}
 	
 	KeyAndPress next() {
 		KeyAndPress tuple;
-		mutex_.lock();
-		{
-			tuple = this->pressList.front();
-			this->pressList.pop()
-		}
-		mutex_.unlock();
+		tuple = this->pressList.front();
+		this->pressList.pop();
 		return tuple;
 	}
 
 	void swap() {
-		mutex_.lock();
-		{
-			std::swap(this->prevMap, this->currMap);
-		}
-		mutex_.unlock();
+		std::swap(this->prevMap, this->currMap);
 	}
 };
