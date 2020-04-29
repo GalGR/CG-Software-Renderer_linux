@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #define EPS 1.0E-10
 
 struct Vector4;
@@ -18,10 +20,10 @@ struct Vector3 {
 	double operator ()(size_t i) const { return (&x)[i]; }
 
 	// Get the Euclidean vector
-	static Vector3 euclid(const Vector3 &vector) { return Vector3(*this); }
+	static Vector3 euclid(const Vector3 &vector) { return vector; }
 	Vector3 &euclid() { return *this; }
 
-	explicit operator Vector4() { return Vector4(*this); }
+	explicit operator Vector4() const;
 
 	// Addition/Subtraction
 	static Vector3 add(const Vector3 &lhs, const Vector3 &rhs) {
@@ -63,7 +65,7 @@ struct Vector3 {
 		}
 		return vector;
 	}
-	friend Vector3 operator /(double lhs, const Vector3 &rhs) { return lhs / rhs; }
+	friend Vector3 operator |(double lhs, const Vector3 &rhs) { return lhs / rhs; }
 	friend Vector3 operator /(const Vector3 &lhs, double rhs) {
 		Vector3 vector;
 		for (int i = 0; i < 3; ++i) {
@@ -71,7 +73,7 @@ struct Vector3 {
 		}
 		return vector;
 	}
-	friend Vector3 operator /(const Vector3 &lhs, double rhs) { return lhs / rhs; }
+	friend Vector3 operator |(const Vector3 &lhs, double rhs) { return lhs / rhs; }
 
 	// Dot Product
 	friend double operator *(const Vector3 &lhs, const Vector3 &rhs) {
@@ -156,7 +158,7 @@ struct Vector3 {
 	
 	// Self negation
 	Vector3 &neg() { return (*this) = neg(*this); }
-	Vector3 &euclid_neg() { return this->neg() }
+	Vector3 &euclid_neg() { return this->neg(); }
 };
 
 #include "Vector4.h"

@@ -141,6 +141,7 @@ static inline void sleep_frame() {
 	std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
 }
 
+void control();
 void TW_CALL loadOBJModel(void* clientData);
 void initScene();
 void initGraphics(GLFWwindow *&window);
@@ -254,10 +255,10 @@ int main(int argc, char *argv[])
 	initTweakBar();
 
 	// Reserve the bounding box buffers
-	sVars.draw_arr.bbox_buffer.resize_pending(BOUNDING_BOX_VERTICES);
+	sVars.draw_arr.s.bbox_buffer.resize_pending(BOUNDING_BOX_VERTICES);
 
 	// Reserve the world axes buffers
-	sVars.draw_arr.axes_buffer.resize_pending(WORLD_AXES_VERTICES);
+	sVars.draw_arr.s.axes_buffer.resize_pending(WORLD_AXES_VERTICES);
 
 	std::swap(uVars, prev_uVars);
 	*uVars = *prev_uVars;
@@ -296,8 +297,8 @@ void render_loop() {
 			if (is_meshModel_pending) {
 				size_t numPoints = meshModel_pending.vertices.size();
 				size_t numVertexNormals = numPoints;
-				sVars.draw_arr.mesh_buffer.resize_pending(numPoints);
-				sVars.draw_arr.normals_buffer.resize_pending(numVertexNormals);
+				sVars.draw_arr.s.mesh_buffer.resize_pending(numPoints);
+				sVars.draw_arr.s.normals_buffer.resize_pending(numVertexNormals);
 	
 				sVars.meshModel = meshModel_pending; // Update the mesh model
 	
@@ -605,9 +606,9 @@ void initGraphics(GLFWwindow *&window)
 	// Initialize GLFW
 	assert_m(glfwInit(), "GLFW initialization failed");
 	GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-	assert_m(!monitor, "GLFW get primary monitor failed");
+	assert_m(monitor, "GLFW get primary monitor failed");
 	const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-	assert_m(!mode, "GLFW get video mode failed");
+	assert_m(mode, "GLFW get video mode failed");
 	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
@@ -617,7 +618,7 @@ void initGraphics(GLFWwindow *&window)
 		/*monitor*/ NULL, // Windowed Mode
 		/*share*/ NULL // Don't share resources with another window
 	);
-	assert_m(!window, "GLFW create window failed");
+	assert_m(window, "GLFW create window failed");
 	glfwMakeContextCurrent(window); // Needed for GLEW (and OpenGL?)
 
 	// Initialize OpenGL

@@ -32,8 +32,8 @@ struct Mouse_t {
 	Mouse_t(Point_T rest) : curr(rest), move(0, 0), rest(rest) {}
 	Mouse_t(Pos_T rest_x, Pos_T rest_y) : curr(Point_T(rest_x, rest_y)), move(0, 0), rest(Point_T(rest_x, rest_y)) {}
 	Mouse_t(GLFWwindow *window) : window(window) {}
-	Mouse_t(GLFWwindow *window, Point_T rest) : window(window), curr(rest), move(0, 0), rest(rest) {}
-	Mouse_t(GLFWwindow *window, Pos_T rest_x, Pos_T rest_y) : window(window), curr(Point_T(rest_x, rest_y)), move(0, 0), rest(Point_T(rest_x, rest_y)) {}
+	Mouse_t(GLFWwindow *window, Point_T rest) : curr(rest), move(0, 0), rest(rest), window(window) {}
+	Mouse_t(GLFWwindow *window, Pos_T rest_x, Pos_T rest_y) : curr(Point_T(rest_x, rest_y)), move(0, 0), rest(Point_T(rest_x, rest_y)), window(window) {}
 
 	void update_rest(Point_T rest) {
 		this->curr = rest;

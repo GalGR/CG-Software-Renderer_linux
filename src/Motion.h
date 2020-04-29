@@ -3,10 +3,10 @@
 #include "Vector4.h"
 #include <assert.h>
 
-#define MAX_ACCEL 1.0
-#define MAX_VELOC 1.0
-#define GO_ACCEL 0.01
-#define STOP_ACCEL -0.1
+#define MOTION_MAX_ACCEL_ 1.0
+#define MOTION_MAX_VELOC_ 1.0
+#define MOTION_GO_ACCEL_ 0.01
+#define MOTION_STOP_ACCEL_ -0.1
 
 struct Motion {
 	double g_a; // Go acceleration
@@ -31,10 +31,10 @@ struct Motion {
 	double max_v; // Max velocity
 
 	Motion(
-		double go_accel = GO_ACCEL,
-		double stop_accel = STOP_ACCEL,
-		double max_accel = MAX_ACCEL,
-		double max_veloc = MAX_VELOC
+		double go_accel = MOTION_GO_ACCEL_,
+		double stop_accel = MOTION_STOP_ACCEL_,
+		double max_accel = MOTION_MAX_ACCEL_,
+		double max_veloc = MOTION_MAX_VELOC_
 	) :
 		g_a(go_accel),
 		s_a(stop_accel),
@@ -117,7 +117,7 @@ struct Motion {
 	}
 };
 
-#undef MAX_ACCEL
-#undef MAX_VELOC
-#undef GO_ACCEL
-#undef STOP_ACCEL
+#undef MOTION_MAX_ACCEL_
+#undef MOTION_MAX_VELOC_
+#undef MOTION_GO_ACCEL_
+#undef MOTION_STOP_ACCEL_

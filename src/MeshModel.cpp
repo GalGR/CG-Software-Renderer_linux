@@ -89,7 +89,7 @@ static void calc_edges(const size_t numVertices, const std::vector<Face> &faces,
 }
 
 MeshModel::MeshModel(const std::vector<Vector4> &vertices, const std::vector<Face> &faces) :
-	vertices(vertices), faces(faces), normals(vertices.size(), Vector4()) {
+	vertices(vertices), normals(vertices.size(), Vector4()), faces(faces) {
 
 	assert(check_faces(vertices, faces));
 

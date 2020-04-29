@@ -14,7 +14,7 @@ struct Light {
 	calc_t calc_f;
 
 	Light(calc_t calc_f = NULL) : calc_f(calc_f) {}
-	Light(double intensity, calc_t calc_f = NULL) : calc_f(calc_f), intensity(intensity) {}
+	Light(double intensity, calc_t calc_f = NULL) : intensity(intensity), calc_f(calc_f) {}
 
 	Color calc(const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) const {
 		return this->calc_f(*this, material, normal, pos, cam_pos);
@@ -49,8 +49,8 @@ struct VectorLight : Light {
 
 	VectorLight(calc_t calc_f = NULL) : Light(calc_f) {}
 	VectorLight(double intensity, calc_t calc_f = NULL) : Light(intensity, calc_f) {}
-	VectorLight(const Vector3 &vec, calc_t calc_f = NULL) : vec(vec), Light(calc_f) {}
-	VectorLight(const Vector3 &vec, double intensity, calc_t calc_f = NULL) : vec(vec), Light(intensity, calc_f) {}
+	VectorLight(const Vector3 &vec, calc_t calc_f = NULL) : Light(calc_f), vec(vec) {}
+	VectorLight(const Vector3 &vec, double intensity, calc_t calc_f = NULL) : Light(intensity, calc_f), vec(vec) {}
 
 	inline void setVector(const Vector3 &vec) { this->vec = vec; }
 
@@ -126,7 +126,7 @@ struct Lighting {
 	Lighting(const Lighting &lighting) {
 		size_t numLights = lighting.lights.size();
 		for (size_t i = 0; i < numLights; ++i) {
-			this->lights.push_back(std::make_unique<Light>(lighting.lights[i]));
+			this->lights.push_back(std::make_unique<Light>(*lighting.lights[i]));
 		}
 	}
 
@@ -148,7 +148,7 @@ struct Lighting {
 				*this->lights[i] = *lighting.lights[i];
 			}
 			for (; i < numOtherLights; ++i) {
-				this->lights.push_back(std::make_unique<Light>(lighting.lights[i]));
+				this->lights.push_back(std::make_unique<Light>(*lighting.lights[i]));
 			}
 		}
 		return *this;

@@ -55,16 +55,13 @@ public:
 };
 
 struct DrawBufferArr {
-	union {
-		PACK(struct {
-			DrawBuffer mesh_buffer;
-			DrawBuffer normals_buffer;
-			DrawBuffer bbox_buffer;
-			DrawBuffer axes_buffer;
-			// Update NUM_DRAW_BUFFERS if adding more DrawBuffers
-		});
-		DrawBuffer buffers[NUM_DRAW_BUFFERS];
-	};
+	struct DrawBuffers{
+		DrawBuffer mesh_buffer;
+		DrawBuffer normals_buffer;
+		DrawBuffer bbox_buffer;
+		DrawBuffer axes_buffer;
+		// Update NUM_DRAW_BUFFERS if adding more DrawBuffers
+	} s;
 
 private:
 	size_t reserveAmount_pending_;
@@ -72,12 +69,12 @@ private:
 	std::mutex mutex_;
 public:
 
-	inline const DrawBuffer &operator [](size_t i) const { return this->buffers[i]; }
-	inline DrawBuffer &operator [](size_t i) { return this->buffers[i]; }
+	inline const DrawBuffer &operator [](size_t i) const { return (&this->s.mesh_buffer)[i]; }
+	inline DrawBuffer &operator [](size_t i) { return (&this->s.mesh_buffer)[i]; }
 
 	void resize(size_t reserveAmount) {
 		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-			this->buffers[i].resize(reserveAmount);
+			(*this)[i].resize(reserveAmount);
 		}
 	}
 
@@ -86,7 +83,7 @@ public:
 		mutex_.lock();
 		{
 			for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-				this->buffers[i].resize_pending(reserveAmount);
+				(*this)[i].resize_pending(reserveAmount);
 			}
 			pending_ = true;
 		}

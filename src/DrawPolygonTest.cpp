@@ -1,6 +1,6 @@
 #include "DrawPolygon.h"
 
-Vector4 center_of_vertices(const Vertices &vertices);
+Vector3 center_of_vertices(const Vertices &vertices);
 void calcBoundRect(const PolyData &poly_data, std::array<PointI, 2> &bound_rect);
 
 extern int iteration;
@@ -30,10 +30,7 @@ void test_color(Color &color) {
 	}
 }
 
-void calcFlatPolygonTest(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
-
-	// Calculate the center of mass (flat shading)
-	Vector4 center = center_of_vertices(poly_data.vertices);
+void calcFlatPolygonTest(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector3 &face_normal, const Vector3 &cam_pos, ScreenPixels &pixels) {
 
 	// Calculate the color (flat shading test)
 	Color color;
@@ -57,7 +54,7 @@ void calcFlatPolygonTest(const PolyData &poly_data, const Lighting &lighting, co
 	}
 }
 
-void calcGouraudPolygonTest(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector4 &face_normal, const Vector4 &cam_pos, ScreenPixels &pixels) {
+void calcGouraudPolygonTest(const PolyData &poly_data, const Lighting &lighting, const Material &material, const Vector3 &face_normal, const Vector3 &cam_pos, ScreenPixels &pixels) {
 	// Calculate the color for each vertex (Gouraud shading test)
 	std::array<Color, 3> colors;
 	int prev_iteration = iteration;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #define EPS 1.0E-10
 
 struct Vector3;
@@ -10,7 +12,7 @@ struct Vector4 {
 
 	// Constructors
 	Vector4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 1.0) : x(x), y(y), z(z), w(w) {}
-	Vector4(const Vector3 &vec3) : Vector4(vec3.x, vec3.y, vec3.z) {}
+	Vector4(const Vector3 &vec3);
 
 	// Get the Homogeneous coordinates
 	double &operator [](size_t i) { return (&x)[i]; }
@@ -35,7 +37,7 @@ struct Vector4 {
 	}
 
 	// Cast to Vector3 (to euclid)
-	operator Vector3() const { return Vector4::euclid(*this); }
+	operator Vector3() const;
 
 	// Homogeneous Addition/Subtraction
 	static Vector4 add(const Vector4 &lhs, const Vector4 &rhs) {

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <mutex>
+#include <assert.h>
 
 #include "MeshModel.h"
 #include "Matrix4.h"
@@ -21,8 +22,8 @@ struct Object {
 	double normals_length = 1.0;
 
 	Object() = default;
-	Object(const MeshModel &meshModel, Matrix4 model = Matrix4::I(), Matrix4 world = Matrix4::I()) : p_meshModel(std::make_shared<MeshModel>(meshModel)), model(model), world(world), bBox(this->meshModel().vertices) {}
-	Object(const Wavefront_obj &wave_obj, bool normalize = true, Matrix4 model = Matrix4::I(), Matrix4 world = Matrix4::I()) : p_meshModel(std::make_shared<MeshModel>(wave_obj, normalize)), model(model), world(world), bBox(this->meshModel().vertices) {}
+	// Object(MeshModel &meshModel, Matrix4 model = Matrix4::I(), Matrix4 world = Matrix4::I()) : p_meshModel(&meshModel), model(model), world(world), bBox(this->meshModel().vertices) {}
+	// Object(const Wavefront_obj &wave_obj, bool normalize = true, Matrix4 model = Matrix4::I(), Matrix4 world = Matrix4::I()) : p_meshModel(std::make_shared<MeshModel>(wave_obj, normalize)), model(model), world(world), bBox(this->meshModel().vertices) {}
 
 	// Gets
 	// ----
