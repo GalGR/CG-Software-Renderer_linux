@@ -24,13 +24,9 @@ struct Light {
 	template <typename Light_T> inline void setCalc() { this->calc_f = Light_T::calc; }
 
 	inline void setIntensity(double intensity) { this->intensity = intensity; }
-	virtual void setVector(const Vector3 &vec) { assert(0); }
 
 	inline const double &getIntensity() const { return this->intensity; }
 	inline double &getIntensity() { return this->intensity; }
-
-	virtual const Vector3 &getVector() const { assert(0); };
-	virtual Vector3 &getVector() { assert(0); };
 
 	template <typename LightsArr>
 	static Color calc(const LightsArr &lights_arr, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
@@ -56,10 +52,10 @@ struct VectorLight : Light {
 	VectorLight(const Vector3 &vec, calc_t calc_f = NULL) : vec(vec), Light(calc_f) {}
 	VectorLight(const Vector3 &vec, double intensity, calc_t calc_f = NULL) : vec(vec), Light(intensity, calc_f) {}
 
-	virtual void setVector(const Vector3 &vec) override { this->vec = vec; }
+	inline void setVector(const Vector3 &vec) { this->vec = vec; }
 
-	virtual const Vector3 &getVector() const override { return this->vec; }
-	virtual Vector3 &getVector() override { return this->vec; }
+	inline const Vector3 &getVector() const { return this->vec; }
+	inline Vector3 &getVector() { return this->vec; }
 };
 
 struct AmbientLight : Light {
@@ -127,6 +123,12 @@ struct Lighting {
 	std::vector<std::unique_ptr<Light>> lights;
 
 	Lighting() = default;
+	Lighting(const Lighting &lighting) {
+		size_t numLights = lighting.lights.size();
+		for (size_t i = 0; i < numLights; ++i) {
+			this->lights.push_back(std::make_unique<Light>(lighting.lights[i]));
+		}
+	}
 
 	void add(Light &&light) { lights.push_back(std::make_unique<Light>(light)); }
 	void add(const Light &light) { lights.push_back(std::make_unique<Light>(light)); }
@@ -136,6 +138,21 @@ struct Lighting {
 
 	const Light &operator [](size_t i) const { return *lights[i]; }
 	Light &operator [](size_t i) { return *lights[i]; }
+
+	Lighting &operator =(const Lighting &lighting) {
+		size_t numOtherLights = lighting.lights.size();
+		size_t numThisLights = this->lights.size();
+		{
+			size_t i = 0;
+			for (; i < numThisLights; ++i) {
+				*this->lights[i] = *lighting.lights[i];
+			}
+			for (; i < numOtherLights; ++i) {
+				this->lights.push_back(std::make_unique<Light>(lighting.lights[i]));
+			}
+		}
+		return *this;
+	}
 
 	size_t size() const { return lights.size(); }
 };

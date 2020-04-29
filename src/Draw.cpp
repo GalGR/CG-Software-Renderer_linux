@@ -5,6 +5,7 @@
 #include "DrawLine.h"
 #include "DrawPolygon.h"
 #include "Barycentric.h"
+#include "Action.h"
 
 #include <cmath>
 
@@ -105,6 +106,31 @@ void Draw::calcProjection(
 //		);
 //	}
 //}
+
+void Draw::drawScene(
+	VarsUnique &uVars,
+	VarsShared &sVars
+) {
+	Draw::drawScene(
+		uVars.camera,
+		uVars.object,
+		uVars.lighting,
+		uVars.shading_mode,
+		sVars.draw_arr.mesh_buffer,
+		sVars.draw_arr.bbox_buffer,
+		sVars.draw_arr.normals_buffer,
+		sVars.draw_arr.axes_buffer,
+		sVars.pixels,
+		sVars.screen,
+		uVars.state[Action::BOUNDING_BOX],
+		uVars.state[Action::VERTEX_NORMALS],
+		uVars.state[Action::WORLD_AXES],
+		uVars.state[Action::OBJECT_AXES],
+		uVars.obj_color,
+		uVars.bbox_color,
+		uVars.normals_color
+	);
+}
 
 void Draw::drawScene(
 	const Camera &camera,

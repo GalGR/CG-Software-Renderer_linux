@@ -33,8 +33,6 @@
 #include "Vector4.h"
 #include "Matrix4.h"
 
-#include "Scene.h"
-
 #include "Object.h"
 #include "Camera.h"
 #include "Light.h"
@@ -71,13 +69,11 @@ KeyboardPress keyboardPress;
 MousePress mousePress;
 KeyboardBind keyboardBind;
 MouseBind mouseBind;
-//typedef std::map<Action, TypeDefVal<bool, false>> ToggleMap;
-ToggleMap<Action> state;
 
 // State variables
 size_t frame_number = 0;
 Mouse mouse;
-bool is_exit;
+bool exit_flag;
 
 
 // Lighting mode enum
@@ -90,9 +86,6 @@ LightingEnum light2_mode;
 TwEnumVal lightingEnumString[] = { {LIGHT_POINT, "Point"}, {LIGHT_DIR, "Directional"} };
 TwType lightingTwType;
 
-// Shading mode
-ShadingEnum shading_mode;
-
 TwEnumVal shadingEnumString[] = { {SHADING_WIRE, "Wireframe"}, {SHADING_FLAT, "Flat"}, {SHADING_GOURAUD, "Gouraud"}, {SHADING_PHONG, "Phong"}, {SHADING_FLAT_TEST, "Flat Test"}, {SHADING_GOURAUD_TEST, "Gouraud Test"} };
 TwType shadingTwType;
 
@@ -101,9 +94,6 @@ TwBar* bar;
 
 // GLFW window
 GLFWwindow *window = NULL;
-
-// Screen dimensions
-ScreenState screen = { START_WIDTH, START_HEIGHT };
 
 // Render timer
 plf::nanotimer render_timer;
@@ -114,55 +104,31 @@ UINT32 render_elapsed_us;
 // Elapsed control loop time
 UINT32 control_elapsed_us;
 
-// Color
-Color color = WHITE;
-
 //obj data type
 Wavefront_obj objScene;
 
-// Scene
-Scene scene;
-
-// Object
-Object &object = scene.object;
-
-// Camera
-Camera &camera = scene.camera;
-
-// Lighting
-Lighting &lighting = scene.lighting;
-
-// Mesh draw buffers
-DrawBuffer mesh_buffer;
-
-// Bounding Box draw buffers
-DrawBuffer bbox_buffer;
-
-// Normals draw buffers
-DrawBuffer normals_buffer;
-
-// World/Object axes draw buffers
-DrawBuffer axes_buffer;
-
-// Pixels screen buffer
-ScreenPixels pixels;
-
 // Camera motion
 Motion cam_motion;
-
 // Object motion
 Motion obj_motion;
-
 // Object scale
 Motion obj_scale_motion; // Only use the x coordinate
 
-// Colors
-Color obj_color = WHITE;
-Color bbox_color = BLUE;
-Color normals_color = YELLOW;
+// Unique variables
+VarsUnique uVarsArr[2];
+VarsUnique *uVars;
+VarsUnique *prev_uVars;
+VarsUnique renderer_uVars;
 
-// Material
-Material material;
+// Shared variables
+VarsShared sVars;
+
+// Mesh model pending
+MeshModel meshModel_pending;
+bool is_meshModel_pending = false;
+
+// Mutex between the control thread and the renderer thread
+std::mutex mtx_control_renderer;
 
 static void assert_m(const bool expr, const char *err) {
 	if (!expr) {
@@ -177,7 +143,7 @@ static inline void sleep_frame() {
 
 void TW_CALL loadOBJModel(void* clientData);
 void initScene();
-void initGraphics(int argc, char *argv[]);
+void initGraphics(GLFWwindow *&window);
 static inline void drawScene();
 void display();
 void window_size_callback(GLFWwindow *window, int width, int height);
@@ -206,15 +172,47 @@ void TW_CALL setLight1Mode(const void *value, void *clientData) { setLightMode(1
 void TW_CALL setLight2Mode(const void *value, void *clientData) { setLightMode(2, light2_mode, *(LightingEnum*)value); }
 void TW_CALL getLight1Mode(void *value, void *clientData) { *(LightingEnum*)value = light1_mode; }
 void TW_CALL getLight2Mode(void *value, void *clientData) { *(LightingEnum*)value = light2_mode; }
+#define SET_VAR_TEMPLATE(NAME, TYPE, VAR) void TW_CALL NAME (const void *value, void *clientData) { VAR = *( TYPE *) value; }
+#define GET_VAR_TEMPLATE(NAME, TYPE, VAR) void TW_CALL NAME (void *value, void *clientData) { *( TYPE *) value = VAR ; }
+SET_VAR_TEMPLATE(setShadingMode, ShadingEnum, uVars->shading_mode)
+GET_VAR_TEMPLATE(getShadingMode, ShadingEnum, uVars->shading_mode)
+SET_VAR_TEMPLATE(setObjColor, Color, uVars->obj_color)
+GET_VAR_TEMPLATE(getObjColor, Color, uVars->obj_color)
+SET_VAR_TEMPLATE(setBBoxColor, Color, uVars->bbox_color)
+GET_VAR_TEMPLATE(getBBoxColor, Color, uVars->bbox_color)
+SET_VAR_TEMPLATE(setNormalsColor, Color, uVars->normals_color)
+GET_VAR_TEMPLATE(getNormalsColor, Color, uVars->normals_color)
+SET_VAR_TEMPLATE(setNormalsLength, double, uVars->object.normals_length)
+GET_VAR_TEMPLATE(getNormalsLength, double, uVars->object.normals_length)
+SET_VAR_TEMPLATE(setAmbientCoefficient, Color, uVars->material.k_ambient)
+GET_VAR_TEMPLATE(getAmbientCoefficient, Color, uVars->material.k_ambient)
+SET_VAR_TEMPLATE(setDiffuseCoefficient, Color, uVars->material.k_diffuse)
+GET_VAR_TEMPLATE(getDiffuseCoefficient, Color, uVars->material.k_diffuse)
+SET_VAR_TEMPLATE(setSpecularCoefficient, Color, uVars->material.k_specular)
+GET_VAR_TEMPLATE(getSpecularCoefficient, Color, uVars->material.k_specular)
+SET_VAR_TEMPLATE(setSpecularPower, double, uVars->material.n_specular)
+GET_VAR_TEMPLATE(getSpecularPower, double, uVars->material.n_specular)
+SET_VAR_TEMPLATE(setAmbientIntensity, double, uVars->lighting[0].getIntensity())
+GET_VAR_TEMPLATE(getAmbientIntensity, double, uVars->lighting[0].getIntensity())
+SET_VAR_TEMPLATE(setLight1Intensity, double, uVars->lighting[1].getIntensity())
+GET_VAR_TEMPLATE(getLight1Intensity, double, uVars->lighting[1].getIntensity())
+SET_VAR_TEMPLATE(setLight2Intensity, double, uVars->lighting[2].getIntensity())
+GET_VAR_TEMPLATE(getLight2Intensity, double, uVars->lighting[2].getIntensity())
+SET_VAR_TEMPLATE(setLight1Vec, Vector3, (*(VectorLight*)(&uVars->lighting[1])).getVector())
+GET_VAR_TEMPLATE(getLight1Vec, Vector3, (*(VectorLight*)(&uVars->lighting[1])).getVector())
+SET_VAR_TEMPLATE(setLight2Vec, Vector3, (*(VectorLight*)(&uVars->lighting[2])).getVector())
+GET_VAR_TEMPLATE(getLight2Vec, Vector3, (*(VectorLight*)(&uVars->lighting[2])).getVector())
 
 void render_loop();
-void control_loop(const int &value);
+void control_loop();
 void event_loop();
+void frame_start(plf::nanotimer &timer);
+void frame_end(plf::nanotimer &timer);
 
 
 int main(int argc, char *argv[])
 {
-	is_exit = false;
+	exit_flag = false;
 	std::atexit(terminate);
 
 	// Get the number of hardware supported parallel threads
@@ -225,11 +223,16 @@ int main(int argc, char *argv[])
 	num_render_threads = num_hw_threads - num_control_threads;
 	if (num_render_threads <= 0) num_render_threads = 1;
 
+	// Initialize the variables pointers
+	uVars = &uVarsArr[0];
+	prev_uVars = &uVarsArr[1];
+	uVars->object.p_meshModel = &sVars.meshModel;
+
 	// Initialize the keybindings
 	initKeybindings();
 
 	// Initialize openGL, glfw, glew
-	initGraphics(argc, argv);
+	initGraphics(window);
 
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL, NULL);
@@ -251,55 +254,98 @@ int main(int argc, char *argv[])
 	initTweakBar();
 
 	// Reserve the bounding box buffers
-	bbox_buffer.resize_pending(BOUNDING_BOX_VERTICES);
+	sVars.draw_arr.bbox_buffer.resize_pending(BOUNDING_BOX_VERTICES);
 
 	// Reserve the world axes buffers
-	axes_buffer.resize_pending(WORLD_AXES_VERTICES);
+	sVars.draw_arr.axes_buffer.resize_pending(WORLD_AXES_VERTICES);
 
+	std::swap(uVars, prev_uVars);
+	*uVars = *prev_uVars;
 
-	std::thread thrd_control_loop(control_loop, std::cref(frame_number));
 	std::thread thrd_render_loop(render_loop);
 
-	event_loop(); // Must run from the main thread
+	control_loop(); // Must run from the main thread
 
-	for (std::thread *thrd : { &thrd_control_loop, &thrd_render_loop }) {
+	for (std::thread *thrd : { &thrd_render_loop }) {
 		thrd->join();
 	}
 
 	return 0;
 }
 
-// Polls events and run the relevant callbacks
-// Must be called from the main thread (where GLFW was initialized)
-void event_loop() {
-	while (glfwWindowShouldClose(window)) {
-		// Handle events (e.g. mouse movement, window resize)
-		glfwPollEvents();
-
-		// Sleep for one frame
-		std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
+void frame_start(plf::nanotimer &timer) {
+	timer.start();
+}
+void frame_end(plf::nanotimer &timer) {
+	double time = timer.get_elapsed_us();
+	double remaining_time = FRAME_US - time;
+	uint64_t sleep_time = (uint64_t)remaining_time;
+	if (remaining_time > 0 && sleep_time > 0) {
+		std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
 	}
-	is_exit = true;
 }
 
 // Syncs the variables and renders a frame
 void render_loop() {
-	while (!is_exit) {
-		
+	static plf::nanotimer timer;
+	while (!exit_flag) {
+		frame_start(timer);
+
+		mtx_control_renderer.lock();
+		{
+			if (is_meshModel_pending) {
+				size_t numPoints = meshModel_pending.vertices.size();
+				size_t numVertexNormals = numPoints;
+				sVars.draw_arr.mesh_buffer.resize_pending(numPoints);
+				sVars.draw_arr.normals_buffer.resize_pending(numVertexNormals);
+	
+				sVars.meshModel = meshModel_pending; // Update the mesh model
+	
+				is_meshModel_pending = false;
+			}
+		}
+		mtx_control_renderer.unlock();
+
+		sVars.sync();
+
+		mtx_control_renderer.lock();
+		{
+			renderer_uVars = *prev_uVars;
+		}
+		mtx_control_renderer.unlock();
+
+		TwRefreshBar(bar);
 
 		// Render the window
 		display();
+
+		frame_end(timer);
 	}
 }
 
 // The logic of the program, updates all the variables
-void control_loop(const int &frame_number) {
-	while(!is_exit) {
-		
+// also polls events and run the relevant callbacks
+// Must be called from the main thread (where GLFW was initialized)
+void control_loop() {
+	static plf::nanotimer timer;
+	while (glfwWindowShouldClose(window)) {
+		frame_start(timer);
 
-		// Sleep for one frame
-		std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
+		// Handle events (e.g. mouse movement, window resize)
+		glfwPollEvents(); // Must run from the main thread
+
+		control();
+
+		mtx_control_renderer.lock();
+		{
+			std::swap(uVars, prev_uVars);
+			*uVars = *prev_uVars;
+		}
+		mtx_control_renderer.unlock();
+
+		frame_end(timer);
 	}
+	exit_flag = true;
 }
 
 void initCallbacks() {
@@ -335,22 +381,22 @@ void initTweakBar() {
 
 
 	shadingTwType = TwDefineEnum("ShadingMode", shadingEnumString, NUM_OF_SHADERS); // Define the shading type
-	TwAddVarRW(bar, "Shading", shadingTwType, &shading_mode, " help'The shading mode' ");
+	TwAddVarCB(bar, "Shading", shadingTwType, setShadingMode, getShadingMode, NULL, " help'The shading mode' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
 	// Define the color bars
-	TwAddVarRW(bar, "Object Color", TW_TYPE_COLOR32, &obj_color, " help='The objects color' ");
-	TwAddVarRW(bar, "Box Color", TW_TYPE_COLOR32, &bbox_color, " help='The objects bounding box color' ");
-	TwAddVarRW(bar, "Normals Color", TW_TYPE_COLOR32, &normals_color, " help='The objects normals color' ");
-	TwAddVarRW(bar, "Normals Length", TW_TYPE_DOUBLE, &object.normals_length, " step=0.01, min=-10.0, max=10.0, help='The objects normals length' ");
+	TwAddVarCB(bar, "Object Color", TW_TYPE_COLOR32, setObjColor, getObjColor, NULL , " help='The objects color' ");
+	TwAddVarCB(bar, "Box Color", TW_TYPE_COLOR32, setBBoxColor, getBBoxColor, NULL, " help='The objects bounding box color' ");
+	TwAddVarCB(bar, "Normals Color", TW_TYPE_COLOR32, setNormalsColor, getNormalsColor, NULL, " help='The objects normals color' ");
+	TwAddVarCB(bar, "Normals Length", TW_TYPE_DOUBLE, setNormalsLength, getNormalsLength, NULL, " step=0.01, min=-10.0, max=10.0, help='The objects normals length' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRW(bar, "Ambient Coefficient", TW_TYPE_COLOR32, &object.material.k_ambient, " help='The ambient coefficient' ");
-	TwAddVarRW(bar, "Diffuse Coefficient", TW_TYPE_COLOR32, &object.material.k_diffuse, " help='The diffuse coefficient' ");
-	TwAddVarRW(bar, "Specular Coefficient", TW_TYPE_COLOR32, &object.material.k_specular, " help='The specular coefficient' ");
-	TwAddVarRW(bar, "Specular Power", TW_TYPE_DOUBLE, &object.material.n_specular, " min=1.0, help='The specular power' ");
+	TwAddVarCB(bar, "Ambient Coefficient", TW_TYPE_COLOR32, setAmbientCoefficient, getAmbientCoefficient, NULL, " help='The ambient coefficient' ");
+	TwAddVarCB(bar, "Diffuse Coefficient", TW_TYPE_COLOR32, setDiffuseCoefficient, getDiffuseCoefficient, NULL, " help='The diffuse coefficient' ");
+	TwAddVarCB(bar, "Specular Coefficient", TW_TYPE_COLOR32, setSpecularCoefficient, getSpecularCoefficient, NULL, " help='The specular coefficient' ");
+	TwAddVarCB(bar, "Specular Power", TW_TYPE_DOUBLE, setSpecularPower, getSpecularPower, NULL, " min=1.0, help='The specular power' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
@@ -360,14 +406,14 @@ void initTweakBar() {
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRW(bar, "Ambient Light Intensity", TW_TYPE_DOUBLE, &lighting[0].getIntensity(), " min=0.0, max=1.0, step=0.01, help='The ambient light's intensity' ");
-	TwAddVarRW(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, &lighting[1].getIntensity(), " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
-	TwAddVarRW(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, &lighting[2].getIntensity(), " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
+	TwAddVarCB(bar, "Ambient Light Intensity", TW_TYPE_DOUBLE, setAmbientIntensity, getAmbientIntensity, NULL, " min=0.0, max=1.0, step=0.01, help='The ambient light's intensity' ");
+	TwAddVarCB(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, setLight1Intensity, getLight1Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
+	TwAddVarCB(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, setLight2Intensity, getLight2Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRW(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, &lighting[1].getVector(), " help='Light 1's position/direction' ");
-	TwAddVarRW(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, &lighting[2].getVector(), " help='Light 1's position/direction' ");
+	TwAddVarCB(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, setLight1Vec, getLight1Vec, NULL, " help='Light 1's position/direction' ");
+	TwAddVarCB(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, setLight2Vec, getLight2Vec, NULL, " help='Light 1's position/direction' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
@@ -386,39 +432,39 @@ void initTweakBar() {
 }
 
 void initMaterial() {
-	material.k_ambient = K_AMBIENT;
-	material.k_diffuse = K_DIFFUSE;
-	material.k_specular = K_SPECULAR;
-	material.n_specular = N_SPECULAR;
+	uVars->material.k_ambient = K_AMBIENT;
+	uVars->material.k_diffuse = K_DIFFUSE;
+	uVars->material.k_specular = K_SPECULAR;
+	uVars->material.n_specular = N_SPECULAR;
 }
 
 void storeMaterial() {
-	material = object.material;
+	uVars->material = uVars->object.material;
 }
 
 void loadMaterial() {
-	object.material = material;
+	uVars->object.material = uVars->material;
 }
 
 void initObject() {
-	object.model = Matrix4::I();
-	object.world = Matrix4::I();
-	object.world_pos = Vector4(0.0, 0.0, 0.0);
-	object.model_pos = Vector4(0.0, 0.0, 0.0);
-	object.rot = Matrix4::I();
+	uVars->object.model = Matrix4::I();
+	uVars->object.world = Matrix4::I();
+	uVars->object.world_pos = Vector4(0.0, 0.0, 0.0);
+	uVars->object.model_pos = Vector4(0.0, 0.0, 0.0);
+	uVars->object.rot = Matrix4::I();
 	loadMaterial();
 }
 
 void initVariables() {
 	// Add light sources
-	if (lighting.size() < 3) {
-		lighting.push_back(AmbientLight(AMBIENT_LIGHT_INTENSITY));
-		lighting.push_back(PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY));
-		lighting.push_back(PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY));
+	if (uVars->lighting.size() < 3) {
+		uVars->lighting.push_back(AmbientLight(AMBIENT_LIGHT_INTENSITY));
+		uVars->lighting.push_back(PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY));
+		uVars->lighting.push_back(PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY));
 	}
 
 	// Reserve the number of pixels
-	pixels.resize_pending(screen.x, screen.y);
+	sVars.pixels.resize_pending(sVars.screen.x, sVars.screen.y);
 
 	// Initialize the camera motion
 	cam_motion = Motion(GO_ACCEL, STOP_ACCEL, MAX_ACCEL, MAX_VELOC);
@@ -428,19 +474,19 @@ void initVariables() {
 	obj_scale_motion = Motion(0.01, -0.1, 0.5, 0.05);
 
 	// Initialize camera
-	camera.inv_view = Matrix4::inv_translation(CAMERA_X, CAMERA_Y, CAMERA_Z); // Test Camera
-	camera.pos = Vector4(CAMERA_X, CAMERA_Y, CAMERA_Z);
-	camera.v = Vector4(0.0, 1.0, 0.0);
-	camera.w = Vector4(0.0, 0.0, 1.0);
-	camera.u_angle = 0.0;
-	camera.rot = Matrix4::I();
+	uVars->camera.inv_view = Matrix4::inv_translation(CAMERA_X, CAMERA_Y, CAMERA_Z); // Test Camera
+	uVars->camera.pos = Vector4(CAMERA_X, CAMERA_Y, CAMERA_Z);
+	uVars->camera.v = Vector4(0.0, 1.0, 0.0);
+	uVars->camera.w = Vector4(0.0, 0.0, 1.0);
+	uVars->camera.u_angle = 0.0;
+	uVars->camera.rot = Matrix4::I();
 
 	// Initialize the lighting
 	light1_mode = INITIAL_LIGHT1_MODE;
 	light2_mode = INITIAL_LIGHT2_MODE;
 
 	// Initialize the shading mode
-	shading_mode = INITIAL_SHADING_MODE;
+	uVars->shading_mode = INITIAL_SHADING_MODE;
 
 	// Initialize the material
 	initMaterial();
@@ -449,13 +495,13 @@ void initVariables() {
 	initObject();
 
 	// Initialize projection matrix
-	camera.n = CAMERA_N;
-	camera.f = CAMERA_F;
-	camera.fovy = CAMERA_FOVY;
-	camera.aspect_ratio = screen.aspect_ratio();
-	camera.ortho_fov_scale = CAMERA_ORTHO_FOV_SCALE;
-	camera.update_projections();
-	camera.proj_type = ProjectionType::PERSPECTIVE;
+	uVars->camera.n = CAMERA_N;
+	uVars->camera.f = CAMERA_F;
+	uVars->camera.fovy = CAMERA_FOVY;
+	uVars->camera.aspect_ratio = sVars.screen.aspect_ratio();
+	uVars->camera.ortho_fov_scale = CAMERA_ORTHO_FOV_SCALE;
+	uVars->camera.update_projections();
+	uVars->camera.proj_type = ProjectionType::PERSPECTIVE;
 
 	// Initialize the mouse
 	double xpos, ypos;
@@ -464,14 +510,14 @@ void initVariables() {
 	mouse.normal(); // Make the cursor visible
 
 	// Initialize the actions
-	state[Action::BOUNDING_BOX] = false;
-	state[Action::VERTEX_NORMALS] = false;
-	state[Action::WORLD_AXES] = true;
-	state[Action::MOUSE_LOOK] = false;
-	state[Action::FPS_CAMERA] = false;
-	state[Action::OBJ_ROTATE] = false;
-	state[Action::VIEW_OBJECT] = false;
-	state[Action::OBJ_CONTROL_MODEL] = false;
+	uVars->state[Action::BOUNDING_BOX] = false;
+	uVars->state[Action::VERTEX_NORMALS] = false;
+	uVars->state[Action::WORLD_AXES] = true;
+	uVars->state[Action::MOUSE_LOOK] = false;
+	uVars->state[Action::FPS_CAMERA] = false;
+	uVars->state[Action::OBJ_ROTATE] = false;
+	uVars->state[Action::VIEW_OBJECT] = false;
+	uVars->state[Action::OBJ_CONTROL_MODEL] = false;
 }
 
 void initKeybindings() {
@@ -541,16 +587,12 @@ void initScene() {
 	storeMaterial();
 
 	// Import the new object
-	object = Object(objScene);
-
-	size_t numPoints = object.meshModel().vertices.size();
-	size_t numVertexNormals = numPoints;
-
-	// Reserve the mesh buffers
-	mesh_buffer.resize_pending(numPoints);
-
-	// Reserve the normals buffers
-	normals_buffer.resize_pending(numVertexNormals);
+	mtx_control_renderer.lock();
+	{
+		meshModel_pending = MeshModel(objScene);
+		is_meshModel_pending = true;
+	}
+	mtx_control_renderer.unlock();
 
 	// Initialize the object
 	initObject();
@@ -558,7 +600,7 @@ void initScene() {
 
 
 //do not change this function unless you really know what you are doing!
-void initGraphics(int argc, char *argv[], GLFWwindow *&window)
+void initGraphics(GLFWwindow *&window)
 {
 	// Initialize GLFW
 	assert_m(glfwInit(), "GLFW initialization failed");
@@ -599,23 +641,8 @@ void initGraphics(int argc, char *argv[], GLFWwindow *&window)
 static inline void drawScene()
 {
 	Draw::drawScene(
-		camera,
-		object,
-		lighting,
-		shading_mode,
-		mesh_buffer,
-		bbox_buffer,
-		normals_buffer,
-		axes_buffer,
-		pixels,
-		screen,
-		state[Action::BOUNDING_BOX],
-		state[Action::VERTEX_NORMALS],
-		state[Action::WORLD_AXES],
-		state[Action::OBJECT_AXES],
-		obj_color,
-		bbox_color,
-		normals_color
+		renderer_uVars,
+		sVars
 	);
 }
 
@@ -662,14 +689,14 @@ void window_size_callback(GLFWwindow *window, int width, int height)
 	glUseScreenCoordinates(width, height);
 
 	// Update the screen dimensions
-	screen.resize_pending(width, height);
+	sVars.screen.resize_pending(width, height);
 
 	// Update the screen pixels buffer
-	pixels.resize_pending(screen.x, screen.y);
+	sVars.pixels.resize_pending(sVars.screen.x, sVars.screen.y);
 
 	// Update the camera projections
-	camera.aspect_ratio = screen.aspect_ratio();
-	camera.update_projections();
+	uVars->camera.aspect_ratio = sVars.screen.aspect_ratio();
+	uVars->camera.update_projections();
 
 	// Send the new window size to AntTweakBar
 	TwWindowSize(width, height);
@@ -727,117 +754,117 @@ void performAction(Action action, bool press) {
 		assert(0);
 		break;
 	case Action::CAM_LEFT:
-		state[Action::CAM_LEFT] = press;
+		uVars->state[Action::CAM_LEFT] = press;
 		break;
 	case Action::CAM_RIGHT:
-		state[Action::CAM_RIGHT] = press;
+		uVars->state[Action::CAM_RIGHT] = press;
 		break;
 	case Action::CAM_FORWARD:
-		state[Action::CAM_FORWARD] = press;
+		uVars->state[Action::CAM_FORWARD] = press;
 		break;
 	case Action::CAM_BACKWARD:
-		state[Action::CAM_BACKWARD] = press;
+		uVars->state[Action::CAM_BACKWARD] = press;
 		break;
 	case Action::CAM_UP:
-		state[Action::CAM_UP] = press;
+		uVars->state[Action::CAM_UP] = press;
 		break;
 	case Action::CAM_DOWN:
-		state[Action::CAM_DOWN] = press;
+		uVars->state[Action::CAM_DOWN] = press;
 		break;
 	case Action::OBJ_LEFT:
-		state[Action::OBJ_LEFT] = press;
+		uVars->state[Action::OBJ_LEFT] = press;
 		break;
 	case Action::OBJ_RIGHT:
-		state[Action::OBJ_RIGHT] = press;
+		uVars->state[Action::OBJ_RIGHT] = press;
 		break;
 	case Action::OBJ_FORWARD:
-		state[Action::OBJ_FORWARD] = press;
+		uVars->state[Action::OBJ_FORWARD] = press;
 		break;
 	case Action::OBJ_BACKWARD:
-		state[Action::OBJ_BACKWARD] = press;
+		uVars->state[Action::OBJ_BACKWARD] = press;
 		break;
 	case Action::OBJ_UP:
-		state[Action::OBJ_UP] = press;
+		uVars->state[Action::OBJ_UP] = press;
 		break;
 	case Action::OBJ_DOWN:
-		state[Action::OBJ_DOWN] = press;
+		uVars->state[Action::OBJ_DOWN] = press;
 		break;
 	case Action::MOUSE_LOOK:
 		if (press) {
-			if (!state[Action::MOUSE_LOOK]) { // Switch to mouse look mode
+			if (!uVars->state[Action::MOUSE_LOOK]) { // Switch to mouse look mode
 				mouse.disable(); // Make the cursor invisible
 			}
 			else { // Switch to normal cursor mode
 				mouse.normal(); // Make the cursor visible
 			}
-			state[Action::MOUSE_LOOK].toggle();
-			state[Action::OBJ_ROTATE] = false;
-			state[Action::FPS_CAMERA] = false;
+			uVars->state[Action::MOUSE_LOOK].toggle();
+			uVars->state[Action::OBJ_ROTATE] = false;
+			uVars->state[Action::FPS_CAMERA] = false;
 			//state[Action::VIEW_OBJECT] = false;
 		}
 		break;
 	case Action::BOUNDING_BOX:
-		if (press) state[Action::BOUNDING_BOX].toggle();
+		if (press) uVars->state[Action::BOUNDING_BOX].toggle();
 		break;
 	case Action::VERTEX_NORMALS:
-		if (press) state[Action::VERTEX_NORMALS].toggle();
+		if (press) uVars->state[Action::VERTEX_NORMALS].toggle();
 		break;
 	case Action::WORLD_AXES:
-		if (press) state[Action::WORLD_AXES].toggle();
+		if (press) uVars->state[Action::WORLD_AXES].toggle();
 		break;
 	case Action::OBJECT_AXES:
-		if (press) state[Action::OBJECT_AXES].toggle();
+		if (press) uVars->state[Action::OBJECT_AXES].toggle();
 		break;
 	case Action::OBJ_SCALE_INC:
-		state[Action::OBJ_SCALE_INC] = press;
+		uVars->state[Action::OBJ_SCALE_INC] = press;
 		break;
 	case Action::OBJ_SCALE_DEC:
-		state[Action::OBJ_SCALE_DEC] = press;
+		uVars->state[Action::OBJ_SCALE_DEC] = press;
 		break;
 	case Action::OBJ_ROTATE:
 		// mouse.normal(); // Make the cursor visible
-		state[Action::MOUSE_LOOK] = false;
-		state[Action::OBJ_ROTATE].toggle();
-		state[Action::FPS_CAMERA] = false;
+		uVars->state[Action::MOUSE_LOOK] = false;
+		uVars->state[Action::OBJ_ROTATE].toggle();
+		uVars->state[Action::FPS_CAMERA] = false;
 		break;
 	case Action::PROJECTION_TOGGLE:
-		if (press) camera.toggle();
+		if (press) uVars->camera.toggle();
 		break;
 	case Action::RESET_SCENE:
 		if (press) initVariables();
 		break;
 	case Action::FPS_CAMERA:
 		if (press) {
-			if (!state[Action::FPS_CAMERA]) { // Switch to mouse look mode
+			if (!uVars->state[Action::FPS_CAMERA]) { // Switch to mouse look mode
 				mouse.disable(); // Make the cursor invisible
 				mouse.reset();
 			}
 			else { // Switch to normal cursor mode
 				mouse.normal(); // Make the cursor visible
 			}
-			state[Action::MOUSE_LOOK] = false;
-			state[Action::OBJ_ROTATE] = false;
-			state[Action::FPS_CAMERA].toggle();
-			//state[Action::VIEW_OBJECT] = false;
+			uVars->state[Action::MOUSE_LOOK] = false;
+			uVars->state[Action::OBJ_ROTATE] = false;
+			uVars->state[Action::FPS_CAMERA].toggle();
+			//uVars->state[Action::VIEW_OBJECT] = false;
 		}
 		break;
 	case Action::VIEW_OBJECT:
-		if (press) state[Action::VIEW_OBJECT].toggle();
+		if (press) uVars->state[Action::VIEW_OBJECT].toggle();
 		break;
 	case Action::OBJ_ALT_MOVE:
-		state[Action::OBJ_ALT_MOVE] = press;
+		uVars->state[Action::OBJ_ALT_MOVE] = press;
 		break;
 	case Action::ESCAPE_ALL:
 		if (press) {
 			mouse.normal(); // Make the cursor visible
-			state[Action::MOUSE_LOOK] = false;
-			state[Action::FPS_CAMERA] = false;
-			state[Action::OBJ_ROTATE] = false;
-			state[Action::VIEW_OBJECT] = false;
+			uVars->state[Action::MOUSE_LOOK] = false;
+			uVars->state[Action::FPS_CAMERA] = false;
+			uVars->state[Action::OBJ_ROTATE] = false;
+			uVars->state[Action::VIEW_OBJECT] = false;
 		}
 		break;
 	case Action::OBJ_CONTROL_MODEL:
-		state[Action::OBJ_CONTROL_MODEL] = press;
+		uVars->state[Action::OBJ_CONTROL_MODEL] = press;
 	}
 }
 
@@ -846,28 +873,23 @@ void update_motion(Motion &motion,
 	Action forward, Action backward,
 	Action up, Action down
 ) {
-	if (state[left]) motion.go_left();
+	if (uVars->state[left]) motion.go_left();
 	else motion.stop_left();
-	if (state[right]) motion.go_right();
+	if (uVars->state[right]) motion.go_right();
 	else motion.stop_right();
-	if (state[forward]) motion.go_forward();
+	if (uVars->state[forward]) motion.go_forward();
 	else motion.stop_forward();
-	if (state[backward]) motion.go_backward();
+	if (uVars->state[backward]) motion.go_backward();
 	else motion.stop_backward();
-	if (state[up]) motion.go_up();
+	if (uVars->state[up]) motion.go_up();
 	else motion.stop_up();
-	if (state[down]) motion.go_down();
+	if (uVars->state[down]) motion.go_down();
 	else motion.stop_down();
 }
 
-void control_loop(const int &value) {
+void control() {
 	// Measure the time it takes to do the main control loop
 	control_timer.start();
-
-	if (frame_number == (unsigned int)value) { // No frame was rendered at that time frame
-		glutTimerFunc(time_frame_ms, control_loop, value); // Register the timer callback again -- with the same frame number
-		return;
-	}
 
 	// Check keys and perform actions
 	while (keyboardPress.hasNext()) {
@@ -898,9 +920,9 @@ void control_loop(const int &value) {
 	);
 
 	// Increase/Decrease the object scale
-	if (state[Action::OBJ_SCALE_INC]) obj_scale_motion.go_right();
+	if (uVars->state[Action::OBJ_SCALE_INC]) obj_scale_motion.go_right();
 	else obj_scale_motion.stop_right();
-	if (state[Action::OBJ_SCALE_DEC]) obj_scale_motion.go_left();
+	if (uVars->state[Action::OBJ_SCALE_DEC]) obj_scale_motion.go_left();
 	else obj_scale_motion.stop_left();
 
 	// Calculate the move vectors
@@ -910,114 +932,91 @@ void control_loop(const int &value) {
 
 	// Update the object scale
 	Matrix4 obj_scale = Matrix4::iso_scaling(1.0 + obj_scale_vector[0]);
-	//if (state[Action::OBJ_CONTROL_MODEL]) {
-	//	object.model = object.model * obj_scale;
+	//if (uVars->state[Action::OBJ_CONTROL_MODEL]) {
+	//	uVars->object.model = object.model * obj_scale;
 	//}
 	//else {
-	//	object.world = object.world * obj_scale;
+	//	uVars->object.world = uVars->object.world * obj_scale;
 	//}
-	object.model = object.model * obj_scale;
+	uVars->object.model = uVars->object.model * obj_scale;
 
 	// Calculate the rotation matrices
 	double u_angle = PI * -(double)mouse.move.y * mouse.sensitivity.y;
 	Matrix4 rotY = Matrix4::rotationY(PI * -(double)mouse.move.x * mouse.sensitivity.x);
 	Matrix4 rotX = Matrix4::rotationX(u_angle);
 	Matrix4 rot = rotX * rotY;
-	Matrix4 rotUW = Matrix4::rotation(camera.v ^ camera.w, camera.v, camera.w);
+	Matrix4 rotUW = Matrix4::rotation(uVars->camera.v ^ uVars->camera.w, uVars->camera.v, uVars->camera.w);
 
 	// Calculate the camera current rotation
-	if (state[Action::MOUSE_LOOK] || state[Action::FPS_CAMERA]) {
-		camera.w = rotY * camera.w;
-		camera.update_u_angle(-u_angle);
+	if (uVars->state[Action::MOUSE_LOOK] || uVars->state[Action::FPS_CAMERA]) {
+		uVars->camera.w = rotY * uVars->camera.w;
+		uVars->camera.update_u_angle(-u_angle);
 
-		if (state[Action::FPS_CAMERA]) { // FPS view
-			camera.update_fps_rot();
+		if (uVars->state[Action::FPS_CAMERA]) { // FPS view
+			uVars->camera.update_fps_rot();
 		}
-		else if (state[Action::MOUSE_LOOK]) { // Free view
-			camera.rot = camera.rot * rotY * rotX;
+		else if (uVars->state[Action::MOUSE_LOOK]) { // Free view
+			uVars->camera.rot = uVars->camera.rot * rotY * rotX;
 		}
 	}
-	else if (state[Action::OBJ_ROTATE]) {
-		if (state[Action::OBJ_CONTROL_MODEL]) {
-			object.model = object.model * Matrix4::transpose(rot);
+	else if (uVars->state[Action::OBJ_ROTATE]) {
+		if (uVars->state[Action::OBJ_CONTROL_MODEL]) {
+			uVars->object.model = uVars->object.model * Matrix4::transpose(rot);
 		}
 		else {
-			object.world = object.world * Matrix4::transpose(rot);
+			uVars->object.world = uVars->object.world * Matrix4::transpose(rot);
 		}
-		object.rot = rot * object.rot;
+		uVars->object.rot = rot * uVars->object.rot;
 	}
 	// Update the mouse rest position
-	if (!state[Action::MOUSE_LOOK] && !state[Action::FPS_CAMERA]) mouse.update_rest(mouse.curr);
+	if (!uVars->state[Action::MOUSE_LOOK] && !uVars->state[Action::FPS_CAMERA]) mouse.update_rest(mouse.curr);
 	mouse.reset();
 
 	// Calculate the translation matrix
 	Matrix4 cam_translate;
-	if (state[Action::FPS_CAMERA]) {
+	if (uVars->state[Action::FPS_CAMERA]) {
 		cam_translate = Matrix4::translation(rotUW * cam_move);
 	}
 	else {
-		cam_translate = Matrix4::translation(camera.rot * cam_move);
+		cam_translate = Matrix4::translation(uVars->camera.rot * cam_move);
 	}
-	camera.pos = cam_translate * camera.pos;
+	uVars->camera.pos = cam_translate * uVars->camera.pos;
 
 	// Update the object position
 	Matrix4 obj_translate;
-	if (!state[Action::OBJ_ALT_MOVE]) {
+	if (!uVars->state[Action::OBJ_ALT_MOVE]) {
 		obj_translate = Matrix4::translation(rotUW * obj_move);
 	}
 	else {
 		obj_translate = Matrix4::translation(obj_move);
 	}
-	if (state[Action::OBJ_CONTROL_MODEL]) {
-		object.model_pos = obj_translate * object.model_pos;
-		object.model = obj_translate * object.model;
+	if (uVars->state[Action::OBJ_CONTROL_MODEL]) {
+		uVars->object.model_pos = obj_translate * uVars->object.model_pos;
+		uVars->object.model = obj_translate * uVars->object.model;
 	}
 	else {
-		object.world_pos = obj_translate * object.world_pos;
-		object.world = obj_translate * object.world;
+		uVars->object.world_pos = obj_translate * uVars->object.world_pos;
+		uVars->object.world = obj_translate * uVars->object.world;
 	}
 
 	// If "view object" is pressed, look at the object
-	if (state[Action::VIEW_OBJECT]) camera.look_at(object.world * object.model_pos);
+	if (uVars->state[Action::VIEW_OBJECT]) uVars->camera.look_at(uVars->object.world * uVars->object.model_pos);
 
 	// Update the camera inverse view transformation
-	camera.update_inv_view();
+	uVars->camera.update_inv_view();
 
 	// Swap the current and previous key maps
-	keyAlpPress.swap();
-	keySplPress.swap();
-	keyModPress.swap();
+	keyboardPress.swap();
+	mousePress.swap();
 
 	// Clear the lists
-	keyAlpPress.clear_list();
-	keySplPress.clear_list();
-	keyModPress.clear_list();
+	keyboardPress.clear_list();
+	mousePress.clear_list();
 
 	// End the control time measure
 	control_elapsed_us = static_cast<UINT32>(control_timer.get_elapsed_us());
-
-	glutTimerFunc(time_frame_ms, control_loop, frame_number); // Register the timer callback again
-	TwRefreshBar(bar);
-	glutPostRedisplay();
 }
 
 void setLightMode(int light_num, LightingEnum &light_mode, const LightingEnum &new_light_mode) {
-	if (light_mode == new_light_mode) return;
-	switch (light_mode) {
-	default:
-		assert(0);
-		break;
-	case LIGHT_POINT:
-	{
-		light_mode = LIGHT_DIR;
-		lighting[light_num].setCalc<PointLight>();
-		break;
-	}
-	case LIGHT_DIR:
-	{
-		light_mode = LIGHT_POINT;
-		lighting[light_num].setCalc<DirectionalLight>();
-		break;
-	}
-	}
+	light_mode = new_light_mode;
 }

@@ -16,9 +16,14 @@ struct ToggleMap {
 		ToggleBool<value> &toggle() { this->val = !(this->val); return *this; }
 	};
 
+	ToggleMap() = default;
+	ToggleMap(const ToggleMap<Key_T> &togg_map) { this->key_bool_map = togg_map.key_bool_map; }
+
 	typedef std::map<Key_T, ToggleBool<false>> KeyBoolMap_T;
 	KeyBoolMap_T key_bool_map;
 
 	ToggleBool<false> &operator [](const Key_T &key) { return this->key_bool_map[key]; }
 	KeyBoolMap_T &operator =(const KeyBoolMap_T &key_bool_map) { return this->key_bool_map = key_bool_map; }
+
+	ToggleMap<Key_T> &operator =(const ToggleMap<Key_T> &togg_map) { this->key_bool_map = togg_map.key_bool_map; }
 };

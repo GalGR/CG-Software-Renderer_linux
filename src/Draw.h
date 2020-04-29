@@ -13,6 +13,7 @@
 #include "Light.h"
 #include "DrawBuffer.h"
 #include "ShadingEnum.h"
+#include "Variables.h"
 
 class Draw {
 public:
@@ -44,6 +45,10 @@ public:
 		const Matrix4 &trans,
 		DrawBuffer &draw_buffer,
 		const ScreenState &screen
+	);
+	static void drawScene(
+		VarsUnique &uVars,
+		VarsShared &sVars
 	);
 	static void drawScene(
 		const Camera &camera,

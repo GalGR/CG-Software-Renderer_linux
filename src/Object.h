@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 
 #include "MeshModel.h"
 #include "Matrix4.h"
@@ -9,7 +10,7 @@
 #include "Material.h"
 
 struct Object {
-	std::shared_ptr<MeshModel> p_meshModel = std::make_shared<MeshModel>(); // The mesh model
+	MeshModel *p_meshModel = NULL; // The mesh model
 	Matrix4 model = Matrix4::I(); // Model to model transformation
 	Matrix4 world = Matrix4::I(); // Model to world transformation
 	Vector4 world_pos; // The position of the object in the world coordinates
@@ -26,8 +27,14 @@ struct Object {
 	// Gets
 	// ----
 
-	inline const MeshModel &meshModel() const { return *p_meshModel; }
-	inline MeshModel &meshModel() { return *p_meshModel; }
+	inline const MeshModel &meshModel() const {
+		assert(p_meshModel);
+		return *p_meshModel;
+	}
+	inline MeshModel &meshModel() {
+		assert(p_meshModel);
+		return *p_meshModel;
+	}
 
 	Vector4 &vertex(size_t i) {
 		return meshModel().vertices[i];

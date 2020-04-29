@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <memory>
+#include <mutex>
 
 #include "Vector4.h"
 #include "Matrix4.h"

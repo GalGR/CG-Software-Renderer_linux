@@ -95,10 +95,8 @@ public:
 	void sync() {
 		mutex_.lock();
 		{
-			if (pending_) {
-				this->resize(reserveAmount_pending_);
-				pending_ = false;
-			}
+			this->resize(reserveAmount_pending_);
+			pending_ = false;
 		}
 		mutex_.unlock();
 	}
