@@ -40,7 +40,7 @@ public:
 			reserveAmount_pending_ = reserveAmount;
 			pending_ = true;
 		}
-		mutex_.lock();
+		mutex_.unlock();
 	}
 	void sync() {
 		mutex_.lock();
@@ -63,12 +63,6 @@ struct DrawBufferArr {
 		// Update NUM_DRAW_BUFFERS if adding more DrawBuffers
 	} s;
 
-private:
-	size_t reserveAmount_pending_;
-	bool pending_ = false;
-	std::mutex mutex_;
-public:
-
 	inline const DrawBuffer &operator [](size_t i) const { return (&this->s.mesh_buffer)[i]; }
 	inline DrawBuffer &operator [](size_t i) { return (&this->s.mesh_buffer)[i]; }
 
@@ -80,21 +74,13 @@ public:
 
 	// Sync functions
 	void resize_pending(size_t reserveAmount) {
-		mutex_.lock();
-		{
-			for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-				(*this)[i].resize_pending(reserveAmount);
-			}
-			pending_ = true;
+		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
+			(*this)[i].resize_pending(reserveAmount);
 		}
-		mutex_.unlock();
 	}
 	void sync() {
-		mutex_.lock();
-		{
-			this->resize(reserveAmount_pending_);
-			pending_ = false;
+		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
+			(*this)[i].sync();
 		}
-		mutex_.unlock();
 	}
 };

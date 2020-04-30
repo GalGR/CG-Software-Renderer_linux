@@ -8,7 +8,11 @@ struct Vector4;
 #include "Vector4.h"
 
 struct Vector3 {
-	double x, y, z;
+	struct {
+		double x;
+		double y;
+		double z;
+	};
 
 	// Constructors
 	Vector3(double x = 0.0, double y = 0.0, double z = 0.0) : x(x), y(y), z(z) {}

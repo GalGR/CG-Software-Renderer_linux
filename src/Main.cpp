@@ -73,7 +73,7 @@ MouseBind mouseBind;
 // State variables
 size_t frame_number = 0;
 Mouse mouse;
-bool exit_flag;
+bool exit_flag = false;
 
 
 // Lighting mode enum
@@ -263,6 +263,9 @@ int main(int argc, char *argv[])
 	std::swap(uVars, prev_uVars);
 	*uVars = *prev_uVars;
 
+	// Yield control of the OpenGL context to the render thread
+	// glfwMakeContextCurrent(NULL);
+
 	std::thread thrd_render_loop(render_loop);
 
 	control_loop(); // Must run from the main thread
@@ -289,7 +292,11 @@ void frame_end(plf::nanotimer &timer) {
 // Syncs the variables and renders a frame
 void render_loop() {
 	static plf::nanotimer timer;
-	while (!exit_flag) {
+
+	// Take control of the OpenGL context
+	glfwMakeContextCurrent(window);
+
+	while (glfwWindowShouldClose(window)) {
 		frame_start(timer);
 
 		mtx_control_renderer.lock();
@@ -322,6 +329,7 @@ void render_loop() {
 
 		frame_end(timer);
 	}
+	exit_flag = true;
 }
 
 // The logic of the program, updates all the variables
@@ -329,7 +337,7 @@ void render_loop() {
 // Must be called from the main thread (where GLFW was initialized)
 void control_loop() {
 	static plf::nanotimer timer;
-	while (glfwWindowShouldClose(window)) {
+	while (!exit_flag) {
 		frame_start(timer);
 
 		// Handle events (e.g. mouse movement, window resize)
@@ -346,7 +354,6 @@ void control_loop() {
 
 		frame_end(timer);
 	}
-	exit_flag = true;
 }
 
 void initCallbacks() {
@@ -382,7 +389,7 @@ void initTweakBar() {
 
 
 	shadingTwType = TwDefineEnum("ShadingMode", shadingEnumString, NUM_OF_SHADERS); // Define the shading type
-	TwAddVarCB(bar, "Shading", shadingTwType, setShadingMode, getShadingMode, NULL, " help'The shading mode' ");
+	TwAddVarCB(bar, "Shading", shadingTwType, setShadingMode, getShadingMode, NULL, " help='The shading mode' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
@@ -407,14 +414,14 @@ void initTweakBar() {
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarCB(bar, "Ambient Light Intensity", TW_TYPE_DOUBLE, setAmbientIntensity, getAmbientIntensity, NULL, " min=0.0, max=1.0, step=0.01, help='The ambient light's intensity' ");
-	TwAddVarCB(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, setLight1Intensity, getLight1Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
-	TwAddVarCB(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, setLight2Intensity, getLight2Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1's intensity' ");
+	TwAddVarCB(bar, "Ambient Light Intensity", TW_TYPE_DOUBLE, setAmbientIntensity, getAmbientIntensity, NULL, " min=0.0, max=1.0, step=0.01, help='The ambient lights intensity' ");
+	TwAddVarCB(bar, "Light 1 Intensity", TW_TYPE_DOUBLE, setLight1Intensity, getLight1Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1s intensity' ");
+	TwAddVarCB(bar, "Light 2 Intensity", TW_TYPE_DOUBLE, setLight2Intensity, getLight2Intensity, NULL, " min=0.0, max=1.0, step=0.01, help='Light 1s intensity' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarCB(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, setLight1Vec, getLight1Vec, NULL, " help='Light 1's position/direction' ");
-	TwAddVarCB(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, setLight2Vec, getLight2Vec, NULL, " help='Light 1's position/direction' ");
+	TwAddVarCB(bar, "Light 1 Position/Direction", TW_TYPE_DIR3D, setLight1Vec, getLight1Vec, NULL, " help='Light 1s position/direction' ");
+	TwAddVarCB(bar, "Light 2 Position/Direction", TW_TYPE_DIR3D, setLight2Vec, getLight2Vec, NULL, " help='Light 1s position/direction' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 

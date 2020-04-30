@@ -8,7 +8,12 @@ struct Vector3;
 #include "Vector3.h"
 
 struct Vector4 {
-	double x, y, z, w;
+	struct {
+		double x;
+		double y;
+		double z;
+		double w;
+	};
 
 	// Constructors
 	Vector4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 1.0) : x(x), y(y), z(z), w(w) {}
@@ -25,16 +30,8 @@ struct Vector4 {
 	double operator ()(size_t i) const { return this->euclid(i); }
 
 	// Get the Euclidean vector
-	static Vector4 euclid(const Vector4 &vector) {
-		Vector4 vector_euclid;
-		for (int i = 0; i < 3; ++i) {
-			vector_euclid[i] = vector(i);
-		}
-		return vector_euclid;
-	}
-	Vector4 &euclid() {
-		return (*this) = euclid(*this);
-	}
+	static Vector3 euclid(const Vector4 &vector);
+	Vector4 &euclid();
 
 	// Cast to Vector3 (to euclid)
 	operator Vector3() const;
