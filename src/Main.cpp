@@ -199,10 +199,10 @@ SET_VAR_TEMPLATE(setLight1Intensity, double, uVars->lighting[1].getIntensity())
 GET_VAR_TEMPLATE(getLight1Intensity, double, uVars->lighting[1].getIntensity())
 SET_VAR_TEMPLATE(setLight2Intensity, double, uVars->lighting[2].getIntensity())
 GET_VAR_TEMPLATE(getLight2Intensity, double, uVars->lighting[2].getIntensity())
-SET_VAR_TEMPLATE(setLight1Vec, Vector3, (*(VectorLight*)(&uVars->lighting[1])).getVector())
-GET_VAR_TEMPLATE(getLight1Vec, Vector3, (*(VectorLight*)(&uVars->lighting[1])).getVector())
-SET_VAR_TEMPLATE(setLight2Vec, Vector3, (*(VectorLight*)(&uVars->lighting[2])).getVector())
-GET_VAR_TEMPLATE(getLight2Vec, Vector3, (*(VectorLight*)(&uVars->lighting[2])).getVector())
+SET_VAR_TEMPLATE(setLight1Vec, Vector3, uVars->lighting[1].getVector())
+GET_VAR_TEMPLATE(getLight1Vec, Vector3, uVars->lighting[1].getVector())
+SET_VAR_TEMPLATE(setLight2Vec, Vector3, uVars->lighting[2].getVector())
+GET_VAR_TEMPLATE(getLight2Vec, Vector3, uVars->lighting[2].getVector())
 
 void render_loop();
 void control_loop();

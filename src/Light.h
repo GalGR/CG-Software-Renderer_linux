@@ -130,8 +130,8 @@ struct Lighting {
 	void push_back(VectorLight &&light) { this->add(std::move(light)); }
 	void push_back(const VectorLight &light) { this->add(light); }
 
-	const Light &operator [](size_t i) const { return lights[i]; }
-	Light &operator [](size_t i) { return lights[i]; }
+	const VectorLight &operator [](size_t i) const { return lights[i]; }
+	VectorLight &operator [](size_t i) { return lights[i]; }
 
 	size_t size() const { return lights.size(); }
 };
