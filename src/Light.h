@@ -58,9 +58,9 @@ struct VectorLight : Light {
 	inline Vector3 &getVector() { return this->vec; }
 };
 
-struct AmbientLight : Light {
-	AmbientLight() : Light(this->calc) {}
-	AmbientLight(double intensity) : Light(intensity, this->calc) {}
+struct AmbientLight : VectorLight {
+	AmbientLight() : VectorLight(this->calc) {}
+	AmbientLight(double intensity) : VectorLight(intensity, this->calc) {}
 
 	static Color calc(const Light &light, const Material &material, const Vector3 &normal, const Vector3 &pos, const Vector3 &cam_pos) {
 		Color color;
@@ -120,39 +120,18 @@ struct PointLight : VectorLight {
 };
 
 struct Lighting {
-	std::vector<std::unique_ptr<Light>> lights;
+	std::vector<VectorLight> lights;
 
 	Lighting() = default;
-	Lighting(const Lighting &lighting) {
-		size_t numLights = lighting.lights.size();
-		for (size_t i = 0; i < numLights; ++i) {
-			this->lights.push_back(std::make_unique<Light>(*lighting.lights[i]));
-		}
-	}
 
-	void add(Light &&light) { lights.push_back(std::make_unique<Light>(light)); }
-	void add(const Light &light) { lights.push_back(std::make_unique<Light>(light)); }
+	void add(VectorLight &&light) { lights.push_back(light); }
+	void add(const VectorLight &light) { lights.push_back(light); }
 
-	void push_back(Light &&light) { this->add(std::move(light)); }
-	void push_back(const Light &light) { this->add(light); }
+	void push_back(VectorLight &&light) { this->add(std::move(light)); }
+	void push_back(const VectorLight &light) { this->add(light); }
 
-	const Light &operator [](size_t i) const { return *lights[i]; }
-	Light &operator [](size_t i) { return *lights[i]; }
-
-	Lighting &operator =(const Lighting &lighting) {
-		size_t numOtherLights = lighting.lights.size();
-		size_t numThisLights = this->lights.size();
-		{
-			size_t i = 0;
-			for (; i < numThisLights; ++i) {
-				*this->lights[i] = *lighting.lights[i];
-			}
-			for (; i < numOtherLights; ++i) {
-				this->lights.push_back(std::make_unique<Light>(*lighting.lights[i]));
-			}
-		}
-		return *this;
-	}
+	const Light &operator [](size_t i) const { return lights[i]; }
+	Light &operator [](size_t i) { return lights[i]; }
 
 	size_t size() const { return lights.size(); }
 };
