@@ -3,6 +3,7 @@
 // Default keybindings
 enum DefaultKeybind {
 	DEFAULT_NONE = GLFW_KEY_UNKNOWN, /*-1*/
+	DEFAULT_LOAD_MESH_MODEL = GLFW_KEY_INSERT, /*INSERT*/
 	DEFAULT_MOUSE_LOOK = GLFW_KEY_F, /*'f'*/
 	DEFAULT_CAM_LEFT = GLFW_KEY_A, /*'a'*/
 	DEFAULT_CAM_RIGHT = GLFW_KEY_D, /*'d'*/

@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 	*uVars = *prev_uVars;
 
 	// Yield control of the OpenGL context to the render thread
-	// glfwMakeContextCurrent(NULL);
+	glfwMakeContextCurrent(NULL);
 
 	std::thread thrd_render_loop(render_loop);
 
@@ -296,7 +296,7 @@ void render_loop() {
 	// Take control of the OpenGL context
 	glfwMakeContextCurrent(window);
 
-	while (glfwWindowShouldClose(window)) {
+	while (!glfwWindowShouldClose(window)) {
 		frame_start(timer);
 
 		mtx_control_renderer.lock();
@@ -368,7 +368,9 @@ void initTweakBar() {
 	bar = TwNewBar("TweakBar");
 
 	TwDefine(
-		" GLOBAL help='Press WASD/Space/Shift to move."
+		" GLOBAL help='"
+		  "Press Insert to load an object."
+		"\nPress WASD/Space/Shift to move."
 		"\nPress F to use the mouse for free look."
 		"\nPress G to use the mouse for FPS look."
 		"\nPress V to toggle view object."
@@ -409,8 +411,8 @@ void initTweakBar() {
 	TwAddSeparator(bar, NULL, NULL);
 
 	lightingTwType = TwDefineEnum("LightingMode", lightingEnumString, NUM_OF_LIGHTING_MODES); // Define the lighting type
-	TwAddVarCB(bar, "Light 1 Mode", lightingTwType, setLight1Mode, getLight1Mode, NULL, " help'Light 1 type' ");
-	TwAddVarCB(bar, "Light 2 Mode", lightingTwType, setLight2Mode, getLight2Mode, NULL, " help'Light 2 type' ");
+	TwAddVarCB(bar, "Light 1 Mode", lightingTwType, setLight1Mode, getLight1Mode, NULL, " help='Light 1 type' ");
+	TwAddVarCB(bar, "Light 2 Mode", lightingTwType, setLight2Mode, getLight2Mode, NULL, " help='Light 2 type' ");
 
 	TwAddSeparator(bar, NULL, NULL);
 
@@ -530,6 +532,7 @@ void initVariables() {
 
 void initKeybindings() {
 	// Bind keyboard
+	keyboardBind.set(DEFAULT_LOAD_MESH_MODEL, Action::LOAD_MESH_MODEL);
 	keyboardBind.set(DEFAULT_CAM_LEFT, Action::CAM_LEFT);
 	keyboardBind.set(DEFAULT_CAM_RIGHT, Action::CAM_RIGHT);
 	keyboardBind.set(DEFAULT_CAM_FORWARD, Action::CAM_FORWARD);
@@ -759,7 +762,10 @@ void terminate(void)
 void performAction(Action action, bool press) {
 	switch (action) {
 	default:
-		assert(0);
+		// assert(0);
+		break;
+	case Action::LOAD_MESH_MODEL:
+		if (press) loadOBJModel(NULL);
 		break;
 	case Action::CAM_LEFT:
 		uVars->state[Action::CAM_LEFT] = press;

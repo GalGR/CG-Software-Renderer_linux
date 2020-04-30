@@ -3,6 +3,7 @@
 // Action enums
 enum class Action {
 	NONE = -1,
+	LOAD_MESH_MODEL,
 	MOUSE_LOOK,
 	CAM_LEFT,
 	CAM_RIGHT,
