@@ -5,3 +5,5 @@
 **/dep/
 CMakeCache.txt
 src/**/build/
+*.jpg
+*.png
