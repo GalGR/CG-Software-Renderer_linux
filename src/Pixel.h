@@ -1,5 +1,6 @@
 #pragma once
 
+#include "basetsd.h"
 #include "Point.h"
 #include "Color.h"
 

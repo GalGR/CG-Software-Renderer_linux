@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "basetsd.h"
 #include <AntTweakBar/TweakBar/include/AntTweakBar.h>
 #include <Glew/include/GL/glew.h>
 #include <glfw/include/GLFW/glfw3.h>

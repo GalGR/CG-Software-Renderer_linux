@@ -1,5 +1,6 @@
 #pragma once
 
+#include "basetsd.h"
 #include "Vector4.h"
 #include "Vector3.h"
 #include "Point.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "basetsd.h"
 #include <vector>
 #include <memory>
 #include <cmath>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "basetsd.h"
 #include "Color.h"
 #include "Pixel.h"
 #include <vector>
