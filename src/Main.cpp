@@ -355,6 +355,7 @@ void main_loop() {
 		frame_end(timer);
 	}
 	exit_flag = true;
+	cv_main_renderer.notify_all();
 }
 
 void initCallbacks() {
