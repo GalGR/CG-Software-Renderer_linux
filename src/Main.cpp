@@ -350,6 +350,8 @@ void main_loop() {
 			*uVars = *prev_uVars;
 		}
 
+		TwRefreshBar(bar);
+
 		display();
 
 		frame_end(timer);
