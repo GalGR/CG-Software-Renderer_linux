@@ -1,13 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <memory>
+#include <mutex>
 
 #include "Defines.h"
 #include "Action.h"
 
 #include "Screen.h"
-#include "ScreenPixels.h"
+#include "ScreenBuffers.h"
 #include "ToggleMap.h"
 #include "Camera.h"
 #include "Object.h"
@@ -20,17 +19,53 @@
 struct VarsShared {
 	// Draw buffer array
 	DrawBufferArr draw_arr;
-	// Pixels screen pixels
-	ScreenPixels pixels;
+	// Screen pixels buffers
+	ScreenBuffers screen_buffers;
 	// The object's mesh model
 	MeshModel meshModel;
 	// Screen dimensions
 	ScreenState screen = { START_WIDTH, START_HEIGHT };
 
+private:
+	std::mutex mutex_resize_;
+public:
+
+	void init() {
+		mutex_resize_.lock();
+		{
+			draw_arr.init(START_WIDTH * START_HEIGHT, BOUNDING_BOX_VERTICES, WORLD_AXES_VERTICES);
+			screen_buffers.init(START_WIDTH, START_HEIGHT, START_PIXELS_WIDTH, START_PIXELS_HEIGHT);
+			screen.init(START_WIDTH, START_HEIGHT);
+		}
+		mutex_resize_.unlock();
+	}
+
+	void resize_screen(size_t width, size_t height) {
+		mutex_resize_.lock();
+		{
+			screen_buffers.resize(width, height);
+			screen.resize(width, height);
+		}
+		mutex_resize_.unlock();
+	}
+
+	void resize_screen_pending(size_t width, size_t height) {
+		mutex_resize_.lock();
+		{
+			screen_buffers.resize_pending(width, height);
+			screen.resize_pending(width, height);
+		}
+		mutex_resize_.unlock();
+	}
+
 	void sync() {
-		draw_arr.sync();
-		pixels.sync();
-		screen.sync();
+		mutex_resize_.lock();
+		{
+			draw_arr.sync();
+			screen_buffers.sync();
+			screen.sync();
+		}
+		mutex_resize_.unlock();
 	}
 };
 

@@ -6,6 +6,8 @@
 
 // Current DrawBuffers mesh_buffer, bbox_buffer, normals_buffer, axes_buffer
 #define NUM_DRAW_BUFFERS 4
+// The resizeable buffers must reside at the beginning of the DrawBufferArr::DrawBuffers s struct
+#define NUM_RESIZEABLE_BUFFERS 2
 
 struct DrawBuffer {
 	typedef std::vector<bool> NeedDraw;
@@ -56,31 +58,59 @@ public:
 
 struct DrawBufferArr {
 	struct DrawBuffers{
+		// Resizeable buffers
 		DrawBuffer mesh_buffer;
 		DrawBuffer normals_buffer;
+
+		// Non-resizeable buffers
 		DrawBuffer bbox_buffer;
 		DrawBuffer axes_buffer;
-		// Update NUM_DRAW_BUFFERS if adding more DrawBuffers
+
+		// Update NUM_DRAW_BUFFERS if adding more DrawBuffers (either resizeable or not)
 	} s;
+
+private:
+	std::mutex mutex_resize_;
+public:
 
 	inline const DrawBuffer &operator [](size_t i) const { return (&this->s.mesh_buffer)[i]; }
 	inline DrawBuffer &operator [](size_t i) { return (&this->s.mesh_buffer)[i]; }
 
-	void resize(size_t reserveAmount) {
-		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-			(*this)[i].resize(reserveAmount);
+	void init(size_t reserveAmount, size_t bbox_reserveAmount, size_t axes_reserveAmount) {
+		for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
+			(*this).resize(reserveAmount);
 		}
+		s.bbox_buffer.resize(bbox_reserveAmount);
+		s.axes_buffer.resize(axes_reserveAmount);
+	}
+
+	void resize(size_t reserveAmount) {
+		mutex_resize_.lock();
+		{
+			for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
+				(*this)[i].resize(reserveAmount);
+			}
+		}
+		mutex_resize_.unlock();
 	}
 
 	// Sync functions
 	void resize_pending(size_t reserveAmount) {
-		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-			(*this)[i].resize_pending(reserveAmount);
+		mutex_resize_.lock();
+		{
+			for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
+				(*this)[i].resize_pending(reserveAmount);
+			}
 		}
+		mutex_resize_.unlock();
 	}
 	void sync() {
-		for (size_t i = 0; i < NUM_DRAW_BUFFERS; ++i) {
-			(*this)[i].sync();
+		mutex_resize_.lock();
+		{
+			for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
+				(*this)[i].sync();
+			}
 		}
+		mutex_resize_.unlock();
 	}
 };

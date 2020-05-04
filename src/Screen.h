@@ -25,6 +25,11 @@ public:
 	inline double mid_y_double() const { return y / 2.0; }
 	inline double aspect_ratio() const { return (double)x / (double)y; }
 
+	inline void init(int x, int y) {
+		this->x = x;
+		this->y = y;
+	}
+
 	inline void resize(int x, int y) {
 			this->x = x;
 			this->y = y;

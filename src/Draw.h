@@ -48,7 +48,8 @@ public:
 	);
 	static void drawScene(
 		VarsUnique &uVars,
-		VarsShared &sVars
+		VarsShared &sVars,
+		ScreenPixels &pixels
 	);
 	static void drawScene(
 		const Camera &camera,

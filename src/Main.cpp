@@ -26,6 +26,9 @@
 #include <map>
 #include <tuple>
 #include <initializer_list>
+#include <condition_variable>
+
+#include "Renderer.h"
 
 #include "Draw.h"
 #include "DrawBuffer.h"
@@ -90,6 +93,9 @@ TwType lightingTwType;
 TwEnumVal shadingEnumString[] = { {SHADING_WIRE, "Wireframe"}, {SHADING_FLAT, "Flat"}, {SHADING_GOURAUD, "Gouraud"}, {SHADING_PHONG, "Phong"}, {SHADING_FLAT_TEST, "Flat Test"}, {SHADING_GOURAUD_TEST, "Gouraud Test"} };
 TwType shadingTwType;
 
+// Renderer
+Renderer renderer;
+
 // AntTweakBar
 TwBar* bar;
 
@@ -128,8 +134,12 @@ VarsShared sVars;
 MeshModel meshModel_pending;
 bool is_meshModel_pending = false;
 
-// Mutex between the control thread and the renderer thread
-std::mutex mtx_control_renderer;
+// Mutex between the main thread and the renderer thread
+std::mutex mtx_main_renderer;
+
+// Condition variable that signals the request to draw a new thread
+std::condition_variable cv_main_renderer;
+bool render_next = false;
 
 static void assert_m(const bool expr, const char *err) {
 	if (!expr) {
@@ -141,6 +151,8 @@ static void assert_m(const bool expr, const char *err) {
 static inline void sleep_frame() {
 	std::this_thread::sleep_for(std::chrono::microseconds(FRAME_US_I));
 }
+
+void glUseScreenCoordinates(int width, int height);
 
 void control();
 void TW_CALL loadOBJModel(void* clientData);
@@ -162,6 +174,7 @@ void storeMaterial();
 void loadMaterial();
 void initObject();
 void initVariables();
+void reInitVariables();
 void initKeybindings();
 void performAction(Action action, bool press);
 void update_motion(Motion &motion,
@@ -205,9 +218,8 @@ GET_VAR_TEMPLATE(getLight1Vec, Vector3, uVars->lighting[1].getVector())
 SET_VAR_TEMPLATE(setLight2Vec, Vector3, uVars->lighting[2].getVector())
 GET_VAR_TEMPLATE(getLight2Vec, Vector3, uVars->lighting[2].getVector())
 
-void render_loop();
-void control_loop();
-void event_loop();
+void render_worker();
+void main_loop();
 void frame_start(plf::nanotimer &timer);
 void frame_end(plf::nanotimer &timer);
 
@@ -224,11 +236,6 @@ int main(int argc, char *argv[])
 	// Appoint the remaining threads (or at least one) to rendering
 	num_render_threads = num_hw_threads - num_control_threads;
 	if (num_render_threads <= 0) num_render_threads = 1;
-
-	// Initialize the variables pointers
-	uVars = &uVarsArr[0];
-	prev_uVars = &uVarsArr[1];
-	uVars->object.p_meshModel = &sVars.meshModel;
 
 	// Initialize the keybindings
 	initKeybindings();
@@ -255,21 +262,12 @@ int main(int argc, char *argv[])
 	// Create a tweak bar
 	initTweakBar();
 
-	// Reserve the bounding box buffers
-	sVars.draw_arr.s.bbox_buffer.resize_pending(BOUNDING_BOX_VERTICES);
+	glUseScreenCoordinates(sVars.screen.x, sVars.screen.y);
+	TwWindowSize(sVars.screen.x, sVars.screen.y);
 
-	// Reserve the world axes buffers
-	sVars.draw_arr.s.axes_buffer.resize_pending(WORLD_AXES_VERTICES);
+	std::thread thrd_render_loop(render_worker);
 
-	std::swap(uVars, prev_uVars);
-	*uVars = *prev_uVars;
-
-	// Yield control of the OpenGL context to the render thread
-	glfwMakeContextCurrent(NULL);
-
-	std::thread thrd_render_loop(render_loop);
-
-	control_loop(); // Must run from the main thread
+	main_loop(); // Must run from the main thread
 
 	for (std::thread *thrd : { &thrd_render_loop }) {
 		thrd->join();
@@ -290,71 +288,73 @@ void frame_end(plf::nanotimer &timer) {
 	}
 }
 
-// Syncs the variables and renders a frame
-void render_loop() {
-	static plf::nanotimer timer;
-
-	// Take control of the OpenGL context
-	glfwMakeContextCurrent(window);
-
-	while (!glfwWindowShouldClose(window)) {
-		frame_start(timer);
-
-		mtx_control_renderer.lock();
+void render_worker() {
+	while (!exit_flag) {
+		std::unique_lock<std::mutex> lk(mtx_main_renderer);
 		{
+			// Wait until ready to render the next frame
+			cv_main_renderer.wait(lk, []{ return render_next && !exit_flag; });
+			render_next = false; // We are handling that request
+
+			// Synchronize the unique variables
+			renderer_uVars = *prev_uVars;
+
+			// Synchronize the mesh model
 			if (is_meshModel_pending) {
 				size_t numPoints = meshModel_pending.vertices.size();
-				size_t numVertexNormals = numPoints;
-				sVars.draw_arr.s.mesh_buffer.resize_pending(numPoints);
-				sVars.draw_arr.s.normals_buffer.resize_pending(numVertexNormals);
-	
+				sVars.draw_arr.resize_pending(numPoints);
+
 				sVars.meshModel = meshModel_pending; // Update the mesh model
-	
+
 				is_meshModel_pending = false;
 			}
 		}
-		mtx_control_renderer.unlock();
+		lk.unlock();
 
+		// Synchronize the shared variables
 		sVars.sync();
 
-		mtx_control_renderer.lock();
-		{
-			renderer_uVars = *prev_uVars;
-		}
-		mtx_control_renderer.unlock();
+		// Render time measure -- start
+		render_timer.start();
 
-		TwRefreshBar(bar);
+		// Calculate the scene
+		drawScene();
 
-		// Render the window
-		display();
+		// Render time measure -- end
+		render_elapsed_us = static_cast<UINT32>(render_timer.get_elapsed_us());
 
-		frame_end(timer);
+		// Advance the next screen buffer
+		sVars.screen_buffers.next();
 	}
-	exit_flag = true;
 }
 
-// The logic of the program, updates all the variables
-// also polls events and run the relevant callbacks
-// Must be called from the main thread (where GLFW was initialized)
-void control_loop() {
+void main_loop() {
 	static plf::nanotimer timer;
-	while (!exit_flag) {
+	while (!glfwWindowShouldClose(window)) {
 		frame_start(timer);
+
+		{
+			std::lock_guard<std::mutex> lk(mtx_main_renderer);
+			render_next = true;
+		}
+		cv_main_renderer.notify_all();
 
 		// Handle events (e.g. mouse movement, window resize)
 		glfwPollEvents(); // Must run from the main thread
 
 		control();
 
-		mtx_control_renderer.lock();
 		{
+			std::lock_guard<std::mutex> lk(mtx_main_renderer);
 			std::swap(uVars, prev_uVars);
 			*uVars = *prev_uVars;
 		}
-		mtx_control_renderer.unlock();
+
+		display();
 
 		frame_end(timer);
 	}
+	exit_flag = true;
 }
 
 void initCallbacks() {
@@ -467,15 +467,30 @@ void initObject() {
 }
 
 void initVariables() {
-	// Add light sources
-	if (uVars->lighting.size() < 3) {
-		uVars->lighting.push_back(AmbientLight(AMBIENT_LIGHT_INTENSITY));
-		uVars->lighting.push_back(PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY));
-		uVars->lighting.push_back(PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY));
-	}
+	// Initialize uVars
+	uVars = &uVarsArr[0];
+	prev_uVars = &uVarsArr[1];
+	uVars->object.p_meshModel = &sVars.meshModel;
 
-	// Reserve the number of pixels
-	sVars.pixels.resize_pending(sVars.screen.x, sVars.screen.y);
+	// Initialize sVars
+	sVars.init();
+
+	// Add light sources
+	uVars->lighting.push_back(AmbientLight(AMBIENT_LIGHT_INTENSITY));
+	uVars->lighting.push_back(PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY));
+	uVars->lighting.push_back(PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY));
+
+	reInitVariables();
+
+	std::swap(uVars, prev_uVars);
+	*uVars = *prev_uVars;
+}
+
+void reInitVariables() {
+	// Reinitialize light sources
+	uVars->lighting[0] = AmbientLight(AMBIENT_LIGHT_INTENSITY);
+	uVars->lighting[1] = PointLight(POINT_LIGHT1_POS, LIGHT1_INTENSITY);
+	uVars->lighting[2] = PointLight(POINT_LIGHT2_POS, LIGHT2_INTENSITY);
 
 	// Initialize the camera motion
 	cam_motion = Motion(GO_ACCEL, STOP_ACCEL, MAX_ACCEL, MAX_VELOC);
@@ -599,12 +614,12 @@ void initScene() {
 	storeMaterial();
 
 	// Import the new object
-	mtx_control_renderer.lock();
+	mtx_main_renderer.lock();
 	{
 		meshModel_pending = MeshModel(objScene);
 		is_meshModel_pending = true;
 	}
-	mtx_control_renderer.unlock();
+	mtx_main_renderer.unlock();
 
 	// Initialize the object
 	initObject();
@@ -654,7 +669,8 @@ static inline void drawScene()
 {
 	Draw::drawScene(
 		renderer_uVars,
-		sVars
+		sVars,
+		sVars.screen_buffers.currCalc()
 	);
 }
 
@@ -678,13 +694,7 @@ void display()
 	glClearColor(0, 0, 0, 1); //background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Render time measure -- start
-	render_timer.start();
-
-	drawScene();
-
-	// Render time measure -- end
-	render_elapsed_us = static_cast<UINT32>(render_timer.get_elapsed_us());
+	renderer.drawScreenPixels(sVars.screen_buffers.currDraw());
 
 	// Draw tweak bars
 	TwDraw();
@@ -701,10 +711,7 @@ void window_size_callback(GLFWwindow *window, int width, int height)
 	glUseScreenCoordinates(width, height);
 
 	// Update the screen dimensions
-	sVars.screen.resize_pending(width, height);
-
-	// Update the screen pixels buffer
-	sVars.pixels.resize_pending(sVars.screen.x, sVars.screen.y);
+	sVars.resize_screen_pending(width, height);
 
 	// Update the camera projections
 	uVars->camera.aspect_ratio = sVars.screen.aspect_ratio();
@@ -846,7 +853,7 @@ void performAction(Action action, bool press) {
 		if (press) uVars->camera.toggle();
 		break;
 	case Action::RESET_SCENE:
-		if (press) initVariables();
+		if (press) reInitVariables();
 		break;
 	case Action::FPS_CAMERA:
 		if (press) {

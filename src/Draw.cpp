@@ -109,7 +109,8 @@ void Draw::calcProjection(
 
 void Draw::drawScene(
 	VarsUnique &uVars,
-	VarsShared &sVars
+	VarsShared &sVars,
+	ScreenPixels &pixels
 ) {
 	Draw::drawScene(
 		uVars.camera,
@@ -120,7 +121,7 @@ void Draw::drawScene(
 		sVars.draw_arr.s.bbox_buffer,
 		sVars.draw_arr.s.normals_buffer,
 		sVars.draw_arr.s.axes_buffer,
-		sVars.pixels,
+		pixels,
 		sVars.screen,
 		uVars.state[Action::BOUNDING_BOX],
 		uVars.state[Action::VERTEX_NORMALS],
@@ -174,8 +175,6 @@ void Draw::drawScene(
 		bbox_color,
 		normals_color
 	);
-
-	renderer.drawScreenPixels(pixels);
 }
 
 void Draw::calcScene(
