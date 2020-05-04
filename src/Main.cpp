@@ -293,7 +293,7 @@ void render_worker() {
 		std::unique_lock<std::mutex> lk(mtx_main_renderer);
 		{
 			// Wait until ready to render the next frame
-			cv_main_renderer.wait(lk, []{ return render_next && !exit_flag; });
+			cv_main_renderer.wait(lk, []{ return render_next || exit_flag; });
 			render_next = false; // We are handling that request
 
 			// Synchronize the unique variables
