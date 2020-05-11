@@ -382,7 +382,7 @@ void control_loop() {
 		control();
 
 		{
-			std::lock_guard<std::mutex> lk(mtx_control_renderer);
+			std::lock_guard lk(mtx_control_renderer);
 			std::swap(uVars, prev_uVars);
 			*uVars = *prev_uVars;
 		}
