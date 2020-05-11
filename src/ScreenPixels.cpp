@@ -57,22 +57,20 @@ void ScreenPixels::resize(size_t width, size_t height) {
 }
 
 void ScreenPixels::resize_pending(size_t width, size_t height) {
-	mutex_.lock();
 	{
+		std::lock_guard lk(mutex_);
 		width_pending_ = width;
 		height_pending_ = height;
 		pending_ = true;
 	}
-	mutex_.unlock();
 }
 
 void ScreenPixels::sync() {
-	mutex_.lock();
 	{
+		std::lock_guard lk(mutex_);
 		if (pending_) {
 			this->resize(width_pending_, height_pending_);
 			pending_ = false;
 		}
 	}
-	mutex_.unlock();
 }

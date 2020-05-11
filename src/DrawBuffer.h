@@ -37,22 +37,20 @@ public:
 
 	// Sync functions
 	void resize_pending(size_t reserveAmount) {
-		mutex_.lock();
 		{
+			std::lock_guard lk(mutex_);
 			reserveAmount_pending_ = reserveAmount;
 			pending_ = true;
 		}
-		mutex_.unlock();
 	}
 	void sync() {
-		mutex_.lock();
 		{
+			std::lock_guard lk(mutex_);
 			if (pending_) {
 				this->resize(reserveAmount_pending_);
 				pending_ = false;
 			}
 		}
-		mutex_.unlock();
 	}
 };
 
@@ -85,32 +83,29 @@ public:
 	}
 
 	void resize(size_t reserveAmount) {
-		mutex_resize_.lock();
 		{
+			std::lock_guard lk(mutex_resize_);
 			for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
 				(*this)[i].resize(reserveAmount);
 			}
 		}
-		mutex_resize_.unlock();
 	}
 
 	// Sync functions
 	void resize_pending(size_t reserveAmount) {
-		mutex_resize_.lock();
 		{
+			std::lock_guard lk(mutex_resize_);
 			for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
 				(*this)[i].resize_pending(reserveAmount);
 			}
 		}
-		mutex_resize_.unlock();
 	}
 	void sync() {
-		mutex_resize_.lock();
 		{
+			std::lock_guard lk(mutex_resize_);
 			for (size_t i = 0; i < NUM_RESIZEABLE_BUFFERS; ++i) {
 				(*this)[i].sync();
 			}
 		}
-		mutex_resize_.unlock();
 	}
 };

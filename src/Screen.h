@@ -37,22 +37,20 @@ public:
 
 	// Sync functions
 	inline void resize_pending(int x, int y) {
-		mutex_.lock();
 		{
+			std::lock_guard lk(mutex_);
 			x_pending_ = x;
 			y_pending_ = y;
 			pending_ = true;
 		}
-		mutex_.unlock();
 	}
 	inline void sync() {
-		mutex_.lock();
 		{
+			std::lock_guard lk(mutex_);
 			if (pending_) {
 				this->resize(x_pending_, y_pending_);
 				pending_ = false;
 			}
 		}
-		mutex_.unlock();
 	}
 };
