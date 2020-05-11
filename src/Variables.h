@@ -23,6 +23,8 @@ struct VarsShared {
 	ScreenBuffers screen_buffers;
 	// The object's mesh model
 	MeshModel meshModel;
+	// Material
+	Material material;
 	// Screen dimensions
 	ScreenState screen = { START_WIDTH, START_HEIGHT };
 
@@ -82,6 +84,4 @@ struct VarsUnique {
 	Color normals_color = YELLOW;
 	// Line Color
 	Color color = WHITE;
-	// Material
-	Material material;
 };

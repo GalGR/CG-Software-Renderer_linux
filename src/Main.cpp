@@ -104,10 +104,14 @@ GLFWwindow *window = NULL;
 
 // Render timer
 plf::nanotimer render_timer;
+// Draw timer
+plf::nanotimer draw_timer;
 // Control loop timer
 plf::nanotimer control_timer;
 // Elapsed render time
 UINT32 render_elapsed_us;
+// Elapsed draw time
+UINT32 draw_elapsed_us;
 // Elapsed control loop time
 UINT32 control_elapsed_us;
 
@@ -135,6 +139,7 @@ MeshModel meshModel_pending;
 bool is_meshModel_pending = false;
 
 // Material pending
+Material material_pending;
 bool is_material_pending = false;
 
 // Mutex between the main thread and the renderer thread
@@ -176,8 +181,6 @@ void terminate(void);
 void initCallbacks();
 void initTweakBar();
 void initMaterial();
-void storeMaterial();
-void loadMaterial();
 void initObject();
 void initVariables();
 void reInitVariables();
@@ -195,6 +198,8 @@ void TW_CALL getLight1Mode(void *value, void *clientData) { *(LightingEnum*)valu
 void TW_CALL getLight2Mode(void *value, void *clientData) { *(LightingEnum*)value = light2_mode; }
 #define SET_VAR_TEMPLATE(NAME, TYPE, VAR) void TW_CALL NAME (const void *value, void *clientData) { VAR = *( TYPE *) value; }
 #define GET_VAR_TEMPLATE(NAME, TYPE, VAR) void TW_CALL NAME (void *value, void *clientData) { *( TYPE *) value = VAR ; }
+#define MAT_SET_VAR_TEMPLATE(NAME, TYPE, VAR) void TW_CALL NAME (const void *value, void *clientData) { std::lock_guard<std::mutex> lk(mtx_control_renderer); VAR = *( TYPE *) value; is_material_pending = true; }
+#define MAT_GET_VAR_TEMPLATE(NAME, TYPE, VAR) void TW_CALL NAME (void *value, void *clientData) { *( TYPE *) value = VAR ; }
 SET_VAR_TEMPLATE(setShadingMode, ShadingEnum, uVars->shading_mode)
 GET_VAR_TEMPLATE(getShadingMode, ShadingEnum, uVars->shading_mode)
 SET_VAR_TEMPLATE(setObjColor, Color, uVars->obj_color)
@@ -205,14 +210,14 @@ SET_VAR_TEMPLATE(setNormalsColor, Color, uVars->normals_color)
 GET_VAR_TEMPLATE(getNormalsColor, Color, uVars->normals_color)
 SET_VAR_TEMPLATE(setNormalsLength, double, uVars->object.normals_length)
 GET_VAR_TEMPLATE(getNormalsLength, double, uVars->object.normals_length)
-SET_VAR_TEMPLATE(setAmbientCoefficient, Color, uVars->material.k_ambient)
-GET_VAR_TEMPLATE(getAmbientCoefficient, Color, uVars->material.k_ambient)
-SET_VAR_TEMPLATE(setDiffuseCoefficient, Color, uVars->material.k_diffuse)
-GET_VAR_TEMPLATE(getDiffuseCoefficient, Color, uVars->material.k_diffuse)
-SET_VAR_TEMPLATE(setSpecularCoefficient, Color, uVars->material.k_specular)
-GET_VAR_TEMPLATE(getSpecularCoefficient, Color, uVars->material.k_specular)
-SET_VAR_TEMPLATE(setSpecularPower, double, uVars->material.n_specular)
-GET_VAR_TEMPLATE(getSpecularPower, double, uVars->material.n_specular)
+MAT_SET_VAR_TEMPLATE(setAmbientCoefficient, Color, material_pending.k_ambient)
+MAT_GET_VAR_TEMPLATE(getAmbientCoefficient, Color, material_pending.k_ambient)
+MAT_SET_VAR_TEMPLATE(setDiffuseCoefficient, Color, material_pending.k_diffuse)
+MAT_GET_VAR_TEMPLATE(getDiffuseCoefficient, Color, material_pending.k_diffuse)
+MAT_SET_VAR_TEMPLATE(setSpecularCoefficient, Color, material_pending.k_specular)
+MAT_GET_VAR_TEMPLATE(getSpecularCoefficient, Color, material_pending.k_specular)
+MAT_SET_VAR_TEMPLATE(setSpecularPower, double, material_pending.n_specular)
+MAT_GET_VAR_TEMPLATE(getSpecularPower, double, material_pending.n_specular)
 SET_VAR_TEMPLATE(setAmbientIntensity, double, uVars->lighting[0].getIntensity())
 GET_VAR_TEMPLATE(getAmbientIntensity, double, uVars->lighting[0].getIntensity())
 SET_VAR_TEMPLATE(setLight1Intensity, double, uVars->lighting[1].getIntensity())
@@ -255,6 +260,7 @@ int main(int argc, char *argv[])
 
 	// Initialize the times
 	render_elapsed_us = 0;
+	draw_elapsed_us = 0;
 	control_elapsed_us = 0;
 
 	// Set GLFW callbacks
@@ -323,7 +329,7 @@ void render_worker() {
 				is_meshModel_pending = false;
 			}
 			if (is_material_pending) {
-				uVars->object.p_material = &uVars->material;
+				sVars.material = material_pending;
 				is_material_pending = false;
 			}
 		}
@@ -357,10 +363,14 @@ void render_loop() {
 	while (!glfwWindowShouldClose(window)) {
 		frame_start(timer);
 
+		draw_timer.start();
+
 		TwRefreshBar(bar);
 
 		// Render the window
 		display();
+
+		draw_elapsed_us = static_cast<UINT32>(draw_timer.get_elapsed_us());
 
 		frame_end(timer);
 	}
@@ -462,7 +472,8 @@ void initTweakBar() {
 
 	TwAddSeparator(bar, NULL, NULL);
 
-	TwAddVarRO(bar, "Render (us)", TW_TYPE_UINT32, &render_elapsed_us, " help='Shows the drawing time in micro seconds' ");
+	TwAddVarRO(bar, "Render (us)", TW_TYPE_UINT32, &render_elapsed_us, " help='Shows the software rendering time in micro seconds' ");
+	TwAddVarRO(bar, "Draw (us)", TW_TYPE_UINT32, &draw_elapsed_us, " help='Shows the drawing on screen time in micro seconds' ");
 	TwAddVarRO(bar, "Control (us)", TW_TYPE_UINT32, &control_elapsed_us, " help='Shows the main control function time in micro seconds' ");
 
 	TwAddSeparator(bar, NULL, NULL);
@@ -477,15 +488,12 @@ void initTweakBar() {
 }
 
 void initMaterial() {
-	uVars->material.k_ambient = K_AMBIENT;
-	uVars->material.k_diffuse = K_DIFFUSE;
-	uVars->material.k_specular = K_SPECULAR;
-	uVars->material.n_specular = N_SPECULAR;
-}
-
-void loadMaterial() {
 	{
 		std::lock_guard<std::mutex> lk(mtx_control_renderer);
+		material_pending.k_ambient = K_AMBIENT;
+		material_pending.k_diffuse = K_DIFFUSE;
+		material_pending.k_specular = K_SPECULAR;
+		material_pending.n_specular = N_SPECULAR;
 		is_material_pending = true;
 	}
 }
@@ -496,7 +504,6 @@ void initObject() {
 	uVars->object.world_pos = Vector4(0.0, 0.0, 0.0);
 	uVars->object.model_pos = Vector4(0.0, 0.0, 0.0);
 	uVars->object.rot = Matrix4::I();
-	loadMaterial();
 }
 
 void initVariables() {
@@ -504,6 +511,7 @@ void initVariables() {
 	uVars = &uVarsArr[0];
 	prev_uVars = &uVarsArr[1];
 	uVars->object.p_meshModel = &sVars.meshModel;
+	uVars->object.p_material = &sVars.material;
 
 	// Initialize sVars
 	sVars.init();
