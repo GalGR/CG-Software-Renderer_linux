@@ -285,6 +285,7 @@ void Draw::calcObject(
 	DrawBuffer::Points2D &points_2d = mesh_buffer.points_2d;
 
 	const MeshModel &meshModel = object.meshModel();
+	const Material &material = object.material();
 
 	// Check if there is an object to render
 	if (meshModel.vertices.size() == 0) return;
@@ -334,19 +335,19 @@ void Draw::calcObject(
 				calcLine(poly[2], poly[0], color, pixels, -INFINITY);
 				break;
 			case SHADING_FLAT:
-				calcFlatPolygon(poly_data, lighting, object.material, Matrix4::transpose(object.rot) * face.face_normal, camera.pos, pixels);
+				calcFlatPolygon(poly_data, lighting, material, Matrix4::transpose(object.rot) * face.face_normal, camera.pos, pixels);
 				break;
 			case SHADING_GOURAUD:
-				calcGouraudPolygon(poly_data, lighting, object.material, face.face_normal, camera.pos, pixels);
+				calcGouraudPolygon(poly_data, lighting, material, face.face_normal, camera.pos, pixels);
 				break;
 			case SHADING_PHONG:
-				calcPhongPolygon(poly_data, lighting, object.material, face.face_normal, camera.pos, pixels);
+				calcPhongPolygon(poly_data, lighting, material, face.face_normal, camera.pos, pixels);
 				break;
 			case SHADING_FLAT_TEST:
-				calcFlatPolygonTest(poly_data, lighting, object.material, Matrix4::transpose(object.rot) * face.face_normal, camera.pos, pixels);
+				calcFlatPolygonTest(poly_data, lighting, material, Matrix4::transpose(object.rot) * face.face_normal, camera.pos, pixels);
 				break;
 			case SHADING_GOURAUD_TEST:
-				calcGouraudPolygonTest(poly_data, lighting, object.material, face.face_normal, camera.pos, pixels);
+				calcGouraudPolygonTest(poly_data, lighting, material, face.face_normal, camera.pos, pixels);
 				break;
 			}
 		}

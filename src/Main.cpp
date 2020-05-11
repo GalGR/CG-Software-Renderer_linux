@@ -322,6 +322,10 @@ void render_worker() {
 
 				is_meshModel_pending = false;
 			}
+			if (is_material_pending) {
+				uVars->object.p_material = &uVars->material;
+				is_material_pending = false;
+			}
 		}
 		lk.unlock();
 
@@ -479,12 +483,11 @@ void initMaterial() {
 	uVars->material.n_specular = N_SPECULAR;
 }
 
-void storeMaterial() {
-	uVars->material = uVars->object.material;
-}
-
 void loadMaterial() {
-	uVars->object.material = uVars->material;
+	{
+		std::lock_guard lk(mtx_control_renderer);
+		is_material_pending = true;
+	}
 }
 
 void initObject() {
@@ -640,16 +643,12 @@ void TW_CALL loadOBJModel(void *data)
 }
 
 void initScene() {
-	// Store the material
-	storeMaterial();
-
 	// Import the new object
-	mtx_main_renderer.lock();
 	{
+		std::lock_guard lk(mtx_control_renderer);
 		meshModel_pending = MeshModel(objScene);
 		is_meshModel_pending = true;
 	}
-	mtx_main_renderer.unlock();
 
 	// Initialize the object
 	initObject();

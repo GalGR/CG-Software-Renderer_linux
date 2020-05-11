@@ -18,7 +18,7 @@ struct Object {
 	Vector4 model_pos; // The position of the object in the model coordinates
 	Matrix4 rot = Matrix4::I(); // The composed rotation of model and world
 	BoundingBox bBox;
-	Material material;
+	Material *p_material;
 	double normals_length = 1.0;
 
 	Object() = default;
@@ -35,6 +35,15 @@ struct Object {
 	inline MeshModel &meshModel() {
 		assert(p_meshModel);
 		return *p_meshModel;
+	}
+
+	inline const Material &material() const {
+		assert(p_material);
+		return *p_material;
+	}
+	inline Material &material() {
+		assert(p_material);
+		return *p_material;
 	}
 
 	Vector4 &vertex(size_t i) {
