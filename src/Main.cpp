@@ -134,11 +134,17 @@ VarsShared sVars;
 MeshModel meshModel_pending;
 bool is_meshModel_pending = false;
 
+// Material pending
+bool is_material_pending = false;
+
 // Mutex between the main thread and the renderer thread
-std::mutex mtx_main_renderer;
+std::mutex mtx_control_renderer;
+
+// Mutex between the renderer loop thread and the renderer worker thread
+std::mutex mtx_renderer_worker;
 
 // Condition variable that signals the request to draw a new thread
-std::condition_variable cv_main_renderer;
+std::condition_variable cv_renderer_worker;
 bool render_next = false;
 
 static void assert_m(const bool expr, const char *err) {
@@ -219,7 +225,8 @@ SET_VAR_TEMPLATE(setLight2Vec, Vector3, uVars->lighting[2].getVector())
 GET_VAR_TEMPLATE(getLight2Vec, Vector3, uVars->lighting[2].getVector())
 
 void render_worker();
-void main_loop();
+void render_loop();
+void control_loop();
 void frame_start(plf::nanotimer &timer);
 void frame_end(plf::nanotimer &timer);
 
@@ -262,14 +269,18 @@ int main(int argc, char *argv[])
 	// Create a tweak bar
 	initTweakBar();
 
+	// Yield control of the OpenGL context to the render thread
+	glfwMakeContextCurrent(NULL);
+
 	glUseScreenCoordinates(sVars.screen.x, sVars.screen.y);
 	TwWindowSize(sVars.screen.x, sVars.screen.y);
 
-	std::thread thrd_render_loop(render_worker);
+	std::thread thrd_render_worker(render_worker);
+	std::thread thrd_render_loop(render_loop);
 
-	main_loop(); // Must run from the main thread
+	control_loop(); // Must run from the main thread
 
-	for (std::thread *thrd : { &thrd_render_loop }) {
+	for (std::thread *thrd : { &thrd_render_loop, &thrd_render_worker }) {
 		thrd->join();
 	}
 
@@ -289,12 +300,15 @@ void frame_end(plf::nanotimer &timer) {
 }
 
 void render_worker() {
+	plf::nanotimer timer;
 	while (!exit_flag) {
-		std::unique_lock<std::mutex> lk(mtx_main_renderer);
+		frame_start(timer);
+
+		std::unique_lock<std::mutex> lk(mtx_control_renderer);
 		{
 			// Wait until ready to render the next frame
-			cv_main_renderer.wait(lk, []{ return render_next || exit_flag; });
-			render_next = false; // We are handling that request
+			// cv_renderer_worker.wait(lk, []{ return render_next || exit_flag; });
+			// render_next = false; // We are handling that request
 
 			// Synchronize the unique variables
 			renderer_uVars = *prev_uVars;
@@ -325,19 +339,38 @@ void render_worker() {
 
 		// Advance the next screen buffer
 		sVars.screen_buffers.next();
+
+		frame_end(timer);
 	}
 }
 
-void main_loop() {
-	static plf::nanotimer timer;
+void render_loop() {
+	plf::nanotimer timer;
+
+	// Take control of the OpenGL context
+	glfwMakeContextCurrent(window);
+
 	while (!glfwWindowShouldClose(window)) {
 		frame_start(timer);
 
-		{
-			std::lock_guard<std::mutex> lk(mtx_main_renderer);
-			render_next = true;
-		}
-		cv_main_renderer.notify_all();
+		TwRefreshBar(bar);
+
+		// Render the window
+		display();
+
+		frame_end(timer);
+	}
+	exit_flag = true;
+	cv_renderer_worker.notify_all();
+}
+
+// The logic of the program, updates all the variables
+// also polls events and run the relevant callbacks
+// Must be called from the main thread (where GLFW was initialized)
+void control_loop() {
+	plf::nanotimer timer;
+	while (!exit_flag) {
+		frame_start(timer);
 
 		// Handle events (e.g. mouse movement, window resize)
 		glfwPollEvents(); // Must run from the main thread
@@ -345,19 +378,13 @@ void main_loop() {
 		control();
 
 		{
-			std::lock_guard<std::mutex> lk(mtx_main_renderer);
+			std::lock_guard<std::mutex> lk(mtx_control_renderer);
 			std::swap(uVars, prev_uVars);
 			*uVars = *prev_uVars;
 		}
 
-		TwRefreshBar(bar);
-
-		display();
-
 		frame_end(timer);
 	}
-	exit_flag = true;
-	cv_main_renderer.notify_all();
 }
 
 void initCallbacks() {
