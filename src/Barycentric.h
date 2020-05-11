@@ -1,8 +1,7 @@
 #pragma once
 
 #include "basetsd.h"
-#include "Vector4.h"
-#include "Vector3.h"
+#include "Vectors.h"
 #include "Point.h"
 #include <array>
 #include <cmath>
