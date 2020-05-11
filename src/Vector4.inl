@@ -1,12 +1,3 @@
-#pragma once
-
-#include <cmath>
-
-#define EPS 1.0E-10
-
-struct Vector3;
-#include "Vector3.h"
-
 struct Vector4 {
 	struct {
 		double x;

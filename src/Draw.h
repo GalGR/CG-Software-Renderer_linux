@@ -4,8 +4,7 @@
 
 #include "Object.h"
 #include "Camera.h"
-#include "Vector4.h"
-#include "Vector3.h"
+#include "Vectors.h"
 #include "Point.h"
 #include "Pixel.h"
 #include "Screen.h"

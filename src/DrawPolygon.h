@@ -2,7 +2,7 @@
 
 #include "Pixel.h"
 #include "ScreenPixels.h"
-#include "Vector3.h"
+#include "Vectors.h"
 #include "Light.h"
 #include "Barycentric.h"
 

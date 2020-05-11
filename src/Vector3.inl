@@ -1,12 +1,3 @@
-#pragma once
-
-#include <cmath>
-
-#define EPS 1.0E-10
-
-struct Vector4;
-#include "Vector4.h"
-
 struct Vector3 {
 	struct {
 		double x;
@@ -164,5 +155,3 @@ struct Vector3 {
 	Vector3 &neg() { return (*this) = neg(*this); }
 	Vector3 &euclid_neg() { return this->neg(); }
 };
-
-#include "Vector4.h"
