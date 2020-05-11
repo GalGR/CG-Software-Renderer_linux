@@ -38,7 +38,7 @@ public:
 
 	void reset() {
 		{
-			std::lock_guard lk(mutex_reset_);
+			std::lock_guard<std::mutex> lk(mutex_reset_);
 			size_t numBuffers = buffers.size();
 			for (size_t i = 0; i < numBuffers; ++i) {
 				this->buffers[i].reset();
@@ -48,7 +48,7 @@ public:
 
 	void next() {
 		{
-			std::lock_guard lk(mutex_curr_);
+			std::lock_guard<std::mutex> lk(mutex_curr_);
 			int next_ind = index((unsigned)curr + 1);
 			mutex_arr_[next_ind].lock();
 			{
@@ -60,7 +60,7 @@ public:
 
 	void drawLock() {
 		{
-			std::lock_guard lk(mutex_curr_);
+			std::lock_guard<std::mutex> lk(mutex_curr_);
 			draw_curr = index(curr - 1);
 			mutex_arr_[draw_curr].lock();
 		}
@@ -72,7 +72,7 @@ public:
 
 	void resize(size_t width, size_t height) {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			for (size_t i = 0; i < SCREEN_BUFFERS_SIZE; ++i) {
 				this->buffers[i].resize(width, height);
 			}
@@ -81,7 +81,7 @@ public:
 
 	void resize_pending(size_t width, size_t height) {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			for (size_t i = 0; i < SCREEN_BUFFERS_SIZE; ++i) {
 				this->buffers[i].resize_pending(width, height);
 			}
@@ -90,7 +90,7 @@ public:
 
 	void sync() {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			for (size_t i = 0; i < SCREEN_BUFFERS_SIZE; ++i) {
 				this->buffers[i].sync();
 			}

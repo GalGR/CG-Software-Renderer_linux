@@ -38,7 +38,7 @@ public:
 	// Sync functions
 	inline void resize_pending(int x, int y) {
 		{
-			std::lock_guard lk(mutex_);
+			std::lock_guard<std::mutex> lk(mutex_);
 			x_pending_ = x;
 			y_pending_ = y;
 			pending_ = true;
@@ -46,7 +46,7 @@ public:
 	}
 	inline void sync() {
 		{
-			std::lock_guard lk(mutex_);
+			std::lock_guard<std::mutex> lk(mutex_);
 			if (pending_) {
 				this->resize(x_pending_, y_pending_);
 				pending_ = false;

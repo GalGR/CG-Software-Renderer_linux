@@ -32,7 +32,7 @@ public:
 
 	void init() {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			draw_arr.init(START_WIDTH * START_HEIGHT, BOUNDING_BOX_VERTICES, WORLD_AXES_VERTICES);
 			screen_buffers.init(START_WIDTH, START_HEIGHT, START_PIXELS_WIDTH, START_PIXELS_HEIGHT);
 			screen.init(START_WIDTH, START_HEIGHT);
@@ -41,7 +41,7 @@ public:
 
 	void resize_screen(size_t width, size_t height) {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			screen_buffers.resize(width, height);
 			screen.resize(width, height);
 		}
@@ -49,7 +49,7 @@ public:
 
 	void resize_screen_pending(size_t width, size_t height) {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			screen_buffers.resize_pending(width, height);
 			screen.resize_pending(width, height);
 		}
@@ -57,7 +57,7 @@ public:
 
 	void sync() {
 		{
-			std::lock_guard lk(mutex_resize_);
+			std::lock_guard<std::mutex> lk(mutex_resize_);
 			draw_arr.sync();
 			screen_buffers.sync();
 			screen.sync();

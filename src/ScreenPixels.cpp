@@ -58,7 +58,7 @@ void ScreenPixels::resize(size_t width, size_t height) {
 
 void ScreenPixels::resize_pending(size_t width, size_t height) {
 	{
-		std::lock_guard lk(mutex_);
+		std::lock_guard<std::mutex> lk(mutex_);
 		width_pending_ = width;
 		height_pending_ = height;
 		pending_ = true;
@@ -67,7 +67,7 @@ void ScreenPixels::resize_pending(size_t width, size_t height) {
 
 void ScreenPixels::sync() {
 	{
-		std::lock_guard lk(mutex_);
+		std::lock_guard<std::mutex> lk(mutex_);
 		if (pending_) {
 			this->resize(width_pending_, height_pending_);
 			pending_ = false;

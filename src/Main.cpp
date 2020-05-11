@@ -382,7 +382,7 @@ void control_loop() {
 		control();
 
 		{
-			std::lock_guard lk(mtx_control_renderer);
+			std::lock_guard<std::mutex> lk(mtx_control_renderer);
 			std::swap(uVars, prev_uVars);
 			*uVars = *prev_uVars;
 		}
@@ -485,7 +485,7 @@ void initMaterial() {
 
 void loadMaterial() {
 	{
-		std::lock_guard lk(mtx_control_renderer);
+		std::lock_guard<std::mutex> lk(mtx_control_renderer);
 		is_material_pending = true;
 	}
 }
@@ -645,7 +645,7 @@ void TW_CALL loadOBJModel(void *data)
 void initScene() {
 	// Import the new object
 	{
-		std::lock_guard lk(mtx_control_renderer);
+		std::lock_guard<std::mutex> lk(mtx_control_renderer);
 		meshModel_pending = MeshModel(objScene);
 		is_meshModel_pending = true;
 	}
