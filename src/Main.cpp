@@ -734,7 +734,12 @@ void display()
 	renderer.drawScreenPixels(sVars.screen_buffers.currDraw());
 
 	// Draw tweak bars
-	TwDraw();
+	try {
+		TwDraw();
+	}
+	catch (...) {
+		std::cerr << "TwDraw failed" << std::endl;
+	}
 
 	//swap back and front frame buffers
 	glfwSwapBuffers(window);
