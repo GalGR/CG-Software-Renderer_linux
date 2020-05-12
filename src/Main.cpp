@@ -779,7 +779,9 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 }
 
 void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
-	TwEventCursorPosGLFW3(window, xpos, ypos);
+	if (!uVars->state[Action::MOUSE_LOOK] && !uVars->state[Action::FPS_CAMERA]) {
+		TwEventCursorPosGLFW3(window, xpos, ypos);
+	}
 
 	mouse.update_pos(xpos, ypos);
 }
@@ -901,7 +903,6 @@ void performAction(Action action, bool press) {
 		if (press) {
 			if (!uVars->state[Action::FPS_CAMERA]) { // Switch to mouse look mode
 				mouse.disable(); // Make the cursor invisible
-				mouse.reset();
 			}
 			else { // Switch to normal cursor mode
 				mouse.normal(); // Make the cursor visible
@@ -1033,8 +1034,7 @@ void control() {
 		uVars->object.rot = rot * uVars->object.rot;
 	}
 	// Update the mouse rest position
-	if (!uVars->state[Action::MOUSE_LOOK] && !uVars->state[Action::FPS_CAMERA]) mouse.update_rest(mouse.curr);
-	mouse.reset();
+	mouse.update_pos();
 
 	// Calculate the translation matrix
 	Matrix4 cam_translate;
@@ -1083,4 +1083,15 @@ void control() {
 
 void setLightMode(int light_num, LightingEnum &light_mode, const LightingEnum &new_light_mode) {
 	light_mode = new_light_mode;
+	switch (light_mode) {
+	default:
+		assert(0);
+		break;
+	case LIGHT_POINT:
+		uVars->lighting[light_num].setCalc<PointLight>();
+		break;
+	case LIGHT_DIR:
+		uVars->lighting[light_num].setCalc<DirectionalLight>();
+		break;
+	}
 }

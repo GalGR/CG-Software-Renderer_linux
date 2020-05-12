@@ -45,6 +45,9 @@ struct Mouse_t {
 		curr = { x, y };
 		move = { curr.x - prev.x, curr.y - prev.y };
 	}
+	void update_pos() {
+		this->update_pos(this->curr.x, this->curr.y);
+	}
 	void reset() {
 		curr = rest;
 		move = { 0, 0 };
