@@ -766,7 +766,9 @@ void window_size_callback(GLFWwindow *window, int width, int height)
 
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-	TwEventMouseButtonGLFW3(window, button, action, mods);
+	if (!uVars->state[Action::MOUSE_LOOK] && !uVars->state[Action::FPS_CAMERA]) {
+		TwEventMouseButtonGLFW3(window, button, action, mods);
+	}
 
 	switch (action) {
 	case GLFW_PRESS:
@@ -782,12 +784,17 @@ void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
 	if (!uVars->state[Action::MOUSE_LOOK] && !uVars->state[Action::FPS_CAMERA]) {
 		TwEventCursorPosGLFW3(window, xpos, ypos);
 	}
+	else {
+		TwEventCursorPosGLFW3(window, sVars.screen.x + 1, sVars.screen.y + 1);
+	}
 
 	mouse.update_pos(xpos, ypos);
 }
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-	TwEventScrollGLFW3(window, xoffset, yoffset);
+	if (!uVars->state[Action::MOUSE_LOOK] && !uVars->state[Action::FPS_CAMERA]) {
+		TwEventScrollGLFW3(window, xoffset, yoffset);
+	}
 }
 
 void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
